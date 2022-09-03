@@ -198,11 +198,6 @@ class StarEvents:
         if skipped_events:
             self.log.info(f"Skipped {skipped_events} duplicate events (already in the DB)")
 
-        # self.cursor.executemany(
-        #     "INSERT INTO stars VALUES (:id, :actor_id, :actor_login, :repo_id, :repo_name, :created_at)",
-        #     self.events,
-        # )
-
         # commit the changes
         self.conn.commit()
 
@@ -226,16 +221,28 @@ class StarEvents:
                 f"SELECT repo_name, COUNT(*) AS count FROM stars GROUP BY repo_name ORDER BY count DESC LIMIT ?",
                 (limit,),
             )
+        else:
+            # if there is a timestamp, get the most stared repos for the given time period
+            # TODO: this is not working
+            self.cursor.execute(
+                f"SELECT repo_name, COUNT(*) AS count FROM stars WHERE created_at > ? GROUP BY repo_name ORDER BY count DESC LIMIT ?",
+                (timestamp, limit),
+            )
 
         # return the result
         return self.cursor.fetchall()
 
 if __name__ == "__main__":
     # Collect Star Events
+    # NOTE: This currently just collects stars for the past hour or so for testing purposes
     stars = StarEvents()
     stars.run()
 
     # Get Star Event Analytics
-    stars = StarEvents()
-    result = stars.get_most_stared()
-    print(result)
+    stars_analytics = StarEvents()
+
+    # Get the most stared repos from all time from the DB - Or at least what we have in there so far
+    all_time = stars_analytics.get_most_stared()
+    print(all_time)
+
+    stars_analytics.close()
