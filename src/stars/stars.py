@@ -206,43 +206,36 @@ class StarEvents:
 
         self.close()
 
-    def get_most_stared(self, limit=20, timestamp=None):
+    def get_most_stared(self, limit=20, hours=None):
         """
         Query the database for the most stared repositories in a given time period
         :param limit: number of results to return
-        :param timestamp: a time period to limit the results to
+        :param hours: a time period to limit the results to
         :return: list of most stared repositories
         """
 
         # Query the database to find the most stared repos during the given time period
-        if not timestamp:
-            # if there is no timestamp, get the most stared repos for all time
+        if not hours:
+            # if there is no hours value, get the most stared repos for all time
             self.cursor.execute(
                 f"SELECT repo_name, COUNT(*) AS count FROM stars GROUP BY repo_name ORDER BY count DESC LIMIT ?",
                 (limit,),
             )
         else:
-            # if there is a timestamp, get the most stared repos for the given time period
-            # TODO: this is not working
+            # if there is a hours value, get the most stared repos for the given time period
+            if os.environ.get('ENV', 'development') == 'production':
+                # TODO
+                pass
+            else:
+                # This query is specific for sqlite
+                query = "SELECT repo_name, COUNT(*) AS count FROM stars WHERE(strftime('%Y-%m%dT%H:%M:%S', created_at) between strftime('%Y-%m%dT%H:%M:%S', ?) and strftime('%Y-%m%dT%H:%M:%S', ?)) GROUP BY repo_name ORDER BY count DESC LIMIT ?"
+
+            end = datetime.utcnow()
+            start = end - timedelta(hours=hours)
             self.cursor.execute(
-                f"SELECT repo_name, COUNT(*) AS count FROM stars WHERE created_at > ? GROUP BY repo_name ORDER BY count DESC LIMIT ?",
-                (timestamp, limit),
+                query,
+                (start.strftime("%Y-%m-%dT%H:%M:%S"), end.strftime("%Y-%m-%dT%H:%M:%S"), limit),
             )
 
         # return the result
         return self.cursor.fetchall()
-
-if __name__ == "__main__":
-    # Collect Star Events
-    # NOTE: This currently just collects stars for the past hour or so for testing purposes
-    stars = StarEvents()
-    stars.run()
-
-    # Get Star Event Analytics
-    stars_analytics = StarEvents()
-
-    # Get the most stared repos from all time from the DB - Or at least what we have in there so far
-    all_time = stars_analytics.get_most_stared()
-    print(all_time)
-
-    stars_analytics.close()
