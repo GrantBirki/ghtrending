@@ -56,9 +56,6 @@ class StarEvents:
         Database connections and configuration
         :return: connection and cursor objects
         """
-        # read sql create table statement
-        with open(os.environ.get("STARS_TABLE_SQL", "data/stars.sql"), "r") as f:
-            create_star_table = f.read()
 
         if os.environ.get("ENV", "development") == "production":
             conn = None  # TODO
@@ -67,6 +64,9 @@ class StarEvents:
             # connect to the local sqlite database
             conn = sqlite3.connect("data/ghtrending.db")
             cursor = conn.cursor()
+            # read sql create table statement
+            with open(os.environ.get("STARS_TABLE_SQL", "data/stars.sql"), "r") as f:
+                create_star_table = f.read()
             cursor.execute(create_star_table)
 
         return conn, cursor
