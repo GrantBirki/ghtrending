@@ -22,7 +22,7 @@ class StarEvents:
         self.conn, self.cursor = self.db_config()
         self.base_url = "https://data.gharchive.org"
         self.hours = 2
-        self.events = self.get_star_events()
+        self.events = []
 
     def log_config(self):
         """
@@ -70,6 +70,12 @@ class StarEvents:
             cursor.execute(create_star_table)
 
         return conn, cursor
+
+    def close(self):
+        """
+        Close the database connection
+        """
+        self.conn.close()
 
     def gharchive_timestamp_fmt(self, timestamp):
         """
@@ -166,6 +172,8 @@ class StarEvents:
         This method will collect and store the GitHub star events in the database
         """
 
+        self.events = self.get_star_events()
+
         skipped_events = 0
 
         # write all events to the stars table in the ghtrending database, continue if the event already exists in the database table
@@ -201,10 +209,33 @@ class StarEvents:
         # get the number of changes
         self.log.info(f"Committed {self.conn.total_changes} changes to the database")
 
-        # close the database connection
-        self.conn.close()
+        self.close()
 
+    def get_most_stared(self, limit=20, timestamp=None):
+        """
+        Query the database for the most stared repositories in a given time period
+        :param limit: number of results to return
+        :param timestamp: a time period to limit the results to
+        :return: list of most stared repositories
+        """
+
+        # Query the database to find the most stared repos during the given time period
+        if not timestamp:
+            # if there is no timestamp, get the most stared repos for all time
+            self.cursor.execute(
+                f"SELECT repo_name, COUNT(*) AS count FROM stars GROUP BY repo_name ORDER BY count DESC LIMIT ?",
+                (limit,),
+            )
+
+        # return the result
+        return self.cursor.fetchall()
 
 if __name__ == "__main__":
+    # Collect Star Events
     stars = StarEvents()
     stars.run()
+
+    # Get Star Event Analytics
+    stars = StarEvents()
+    result = stars.get_most_stared()
+    print(result)
