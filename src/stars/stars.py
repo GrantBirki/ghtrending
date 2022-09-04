@@ -19,6 +19,7 @@ class StarEvents:
         """
         Initialize the StarEvents class
         """
+        self.gh_token = os.environ.get("GH_TOKEN", None)
         self.prod = os.environ.get("ENV", False) == "production"
         self.log = self.log_config()
         self.conn, self.cursor = self.db_config()
@@ -369,7 +370,9 @@ class StarEvents:
         # loop through all the most stared repos and get the additional information
         for repo in self.most_stared:
 
-            resp = requests.get(f"{self.gh_base_url}/repos/{repo[0]}")
+            # add github token to request for higher rate limit
+            headers = {"Authorization": f"Bearer {self.gh_token}"}
+            resp = requests.get(f"{self.gh_base_url}/repos/{repo[0]}", headers=headers)
 
             if resp.status_code != 200:
                 self.log.error(
