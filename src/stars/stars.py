@@ -71,6 +71,12 @@ class StarEvents:
 
         return conn, cursor
 
+    def clear_events(self):
+        """
+        Clears all events from the events list
+        """
+        self.events = []
+
     def close(self):
         """
         Close the database connection
@@ -130,16 +136,21 @@ class StarEvents:
 
         return path
 
-    def get_star_events(self, timestamp=None):
+    def get_star_events(self, timestamp=None, direct_path=None, keep_file=False):
         """
         Get all GitHub star events for the given time period
         :param timestamp: time period to collect events for in gharchive format
-        :return: list of star events
+        :param direct_path: path to the gharchive file
+        :param keep_file: keep the downloaded file
         """
 
         events = []
 
-        path = self.gharchive_download(timestamp)
+        if direct_path:
+            path = direct_path
+        else:
+            path = self.gharchive_download(timestamp)
+
         with gzip.open(path, "rb") as f:
             for line in f:
 
@@ -162,18 +173,12 @@ class StarEvents:
         self.log.info(f"Collected {len(events)} GitHub star events")
 
         # remove the downloaded file
-        os.remove(path)
+        if keep_file == False:
+            os.remove(path)
 
-        return events
+        self.events = events
 
-    def run(self):
-        """
-        Run the StarEvents class
-        This method will collect and store the GitHub star events in the database
-        """
-
-        self.events = self.get_star_events()
-
+    def write_star_events(self):
         skipped_events = 0
 
         # write all events to the stars table in the ghtrending database, continue if the event already exists in the database table
@@ -204,6 +209,13 @@ class StarEvents:
         # get the number of changes
         self.log.info(f"Committed {self.conn.total_changes} changes to the database")
 
+    def run(self):
+        """
+        Run the StarEvents class
+        This method will collect and store the GitHub star events in the database
+        """
+        self.get_star_events()
+        self.write_star_events()
         self.close()
 
     def get_most_stared(self, limit=20, hours=None):
