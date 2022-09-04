@@ -1,5 +1,6 @@
 tmp
 data/*.db
+!data/ghtrending-sample.db
 data/*.gz
 __pycache__
 script/populate
