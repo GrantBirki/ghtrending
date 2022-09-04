@@ -52,7 +52,7 @@ jobs:
 
       - name: build
         if: ${{ steps.branch-deploy.outputs.continue == 'true' }}
-        run: npm run build
+        run: npm run build-prod
 
       - name: deploy - dev
         id: dev-deploy
