@@ -64,7 +64,7 @@ class StarEvents:
                 passwd=os.environ.get("DB_PASSWORD"),
                 db=os.environ.get("DATABASE_NAME"),
                 ssl_mode="VERIFY_IDENTITY",
-                ssl={"ca": "/etc/ssl/cert.pem"},
+                ssl={"ca": "/etc/ssl/certs/ca-certificates.crt"},
             )
             cursor = conn.cursor()
         else:
