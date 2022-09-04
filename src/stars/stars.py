@@ -23,8 +23,10 @@ class StarEvents:
         self.log = self.log_config()
         self.conn, self.cursor = self.db_config()
         self.base_url = "https://data.gharchive.org"
+        self.gh_base_url = "https://api.github.com"
         self.hours = 2
         self.events = []
+        self.most_stared = []
         self.schema = {
             "id": 0,
             "actor_id": 1,
@@ -305,11 +307,12 @@ class StarEvents:
 
         return events
 
-    def get_most_stared(self, limit=20, hours=None):
+    def get_most_stared(self, limit=20, hours=None, enrich=True):
         """
         Query the database for the most stared repositories in a given time period
         :param limit: number of results to return
         :param hours: a time period to limit the results to
+        :param enrich: enrich the results with the GitHub API
         :return: list of most stared repositories
         """
         # Query the database to find the most stared repos during the given time period
@@ -346,8 +349,55 @@ class StarEvents:
                 ),
             )
 
+        # update the object with the results
+        self.most_stared = self.cursor.fetchall()
+
+        if enrich:
+            self.most_stared = self.enrich_most_stared()
+
         # return the result
-        return self.cursor.fetchall()
+        return self.most_stared
+
+    def enrich_most_stared(self):
+        """
+        Enrich the most stared repositories with additional information from the GitHub API
+        :return: list of most stared repositories with additional information
+        Note: This function will also update the self.most_stared object with the enriched data
+        """
+        most_stared_enriched = []
+
+        # loop through all the most stared repos and get the additional information
+        for repo in self.most_stared:
+
+            resp = requests.get(f"{self.gh_base_url}/repos/{repo[0]}")
+
+            if resp.status_code != 200:
+                self.log.error(
+                    f"Error getting repo enrichment data for {repo[0]} - HTTP: {resp.status_code}"
+                )
+                continue
+
+            repo_data = resp.json()
+
+            most_stared_enriched.append(
+                {
+                    "repo_name": repo[0],
+                    "stars": repo[1],
+                    "repo_url": f"https://github.com/{repo[0]}",
+                    "description": repo_data["description"],
+                    "stargazers_count": repo_data["stargazers_count"],
+                    "language": repo_data["language"],
+                    "forks_count": repo_data["forks_count"],
+                    "updated_at": repo_data["updated_at"],
+                    "watchers_count": repo_data["watchers_count"],
+                    "open_issues_count": repo_data["open_issues_count"],
+                    "topics": repo_data["topics"],
+                    "license": repo_data["license"],
+                }
+            )
+
+        self.most_stared = most_stared_enriched
+        return self.most_stared
 
     def run(self):
         """
