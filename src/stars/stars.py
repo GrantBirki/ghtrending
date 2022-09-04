@@ -228,6 +228,10 @@ class StarEvents:
                 )
             )
 
+        if len(fmt_events) == 0:
+            self.log.info("No new events to write to the database that are not duplicates")
+            return
+
         if self.prod == True:
             # planetscale query format
             query = "INSERT INTO stars VALUES (%s, %s, %s, %s, %s, %s)"
@@ -253,6 +257,12 @@ class StarEvents:
             # loop through all events and commit them to the database
             for event in self.events:
                 try:
+
+                    # if the event is already in the database, skip it
+                    if event["id"] in recent_event_ids:
+                        skipped_events += 1
+                        continue
+
                     self.cursor.execute(
                         query,
                         (
