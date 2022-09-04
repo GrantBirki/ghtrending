@@ -1,6 +1,6 @@
 # ghtrending
 
-[![stars](https://github.com/GrantBirki/ghtrending/actions/workflows/stars.yml/badge.svg)](https://github.com/GrantBirki/ghtrending/actions/workflows/stars.yml)
+[![ci](https://github.com/GrantBirki/ghtrending/actions/workflows/ci.yml/badge.svg)](https://github.com/GrantBirki/ghtrending/actions/workflows/ci.yml) [![stars](https://github.com/GrantBirki/ghtrending/actions/workflows/stars.yml/badge.svg)](https://github.com/GrantBirki/ghtrending/actions/workflows/stars.yml)
 
 ## Usage 💻
 

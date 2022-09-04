@@ -34,20 +34,17 @@ jobs:
         with:
           node-version: 18.8.0
 
-      - name: Get npm cache directory
-        if: ${{ steps.branch-deploy.outputs.continue == 'true' }}
-        id: npm-cache-dir
-        run: |
-          echo "::set-output name=dir::$(npm config get cache)"
-
-      - uses: actions/cache@fd5de65bc895cf536527842281bea11763fefd77 # pin@v3
-        if: ${{ steps.branch-deploy.outputs.continue == 'true' }}
-        id: npm-cache
-        with:
-          path: ${{ steps.npm-cache-dir.outputs.dir }}
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
+      # - uses: actions/cache@937d24475381cd9c75ae6db12cb4e79714b926ed # pin@v2
+      #   with:
+      #     path: |
+      #       ~/.npm
+      #       ${{ github.workspace }}/.next/cache
+      #     # Generate a new cache whenever packages or source files change.
+      #     key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-${{
+      #       hashFiles('**.[jt]s', '**.[jt]sx') }}
+      #     # If source files changed but packages didn't, rebuild from a prior cache.
+      #     restore-keys: |
+      #       ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-
 
       - name: install
         if: ${{ steps.branch-deploy.outputs.continue == 'true' }}
