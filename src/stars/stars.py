@@ -195,8 +195,15 @@ class StarEvents:
         # write all events to the stars table in the ghtrending database, continue if the event already exists in the database table
         for event in self.events:
             try:
+                if os.environ.get("ENV", "development") == "production":
+                    # planetscale query format
+                    query = "INSERT INTO stars VALUES (%s, %s, %s, %s, %s, %s)"
+                else:
+                    # sqlite query format
+                    query = "INSERT INTO stars VALUES (?, ?, ?, ?, ?, ?)"
+
                 self.cursor.execute(
-                    "INSERT INTO stars VALUES (?, ?, ?, ?, ?, ?)",
+                    query,
                     (
                         event["id"],
                         event["actor_id"],
@@ -240,18 +247,25 @@ class StarEvents:
         """
         # Query the database to find the most stared repos during the given time period
         if not hours:
+            if os.environ.get("ENV", "development") == "production":
+                # planetscale query format
+                query = "SELECT repo_name, COUNT(*) AS count FROM stars GROUP BY repo_name ORDER BY count DESC LIMIT %s"
+            else:
+                # sqlite query format
+                query = "SELECT repo_name, COUNT(*) AS count FROM stars GROUP BY repo_name ORDER BY count DESC LIMIT ?"
+
             # if there is no hours value, get the most stared repos for all time
             self.cursor.execute(
-                f"SELECT repo_name, COUNT(*) AS count FROM stars GROUP BY repo_name ORDER BY count DESC LIMIT ?",
+                query,
                 (limit,),
             )
         else:
             # if there is a hours value, get the most stared repos for the given time period
             if os.environ.get("ENV", "development") == "production":
-                # TODO
-                pass
+                # planetscale query format
+                query = "SELECT repo_name, COUNT(*) AS count FROM stars WHERE(strftime('%Y-%m%dT%H:%M:%S', created_at) between strftime('%Y-%m%dT%H:%M:%S', %s) and strftime('%Y-%m%dT%H:%M:%S', %s)) GROUP BY repo_name ORDER BY count DESC LIMIT %s"
             else:
-                # This query is specific for sqlite
+                # sqlite query format
                 query = "SELECT repo_name, COUNT(*) AS count FROM stars WHERE(strftime('%Y-%m%dT%H:%M:%S', created_at) between strftime('%Y-%m%dT%H:%M:%S', ?) and strftime('%Y-%m%dT%H:%M:%S', ?)) GROUP BY repo_name ORDER BY count DESC LIMIT ?"
 
             end = datetime.utcnow()
