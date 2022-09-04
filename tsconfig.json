@@ -42,5 +42,22 @@
     }
   },
   "exclude": ["./out/**/*", "./node_modules/**/*", "**/*.cy.ts"],
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"]
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.js",
+    "**/*.jsx",
+    "src/utils/AppConfig.js",
+    "src/layouts/Meta.test.jsx",
+    "src/layouts/Meta.jsx",
+    "src/pages/_app.jsx",
+    "src/pages/_document.jsx",
+    "src/pages/about.jsx",
+    "src/pages/index.jsx",
+    "src/pages.test/index.test.jsx",
+    "src/pages.test/about.test.jsx",
+    "src/templates/Main.test.jsx",
+    "src/templates/Main.jsx"
+  ]
 }
