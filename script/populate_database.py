@@ -18,6 +18,8 @@ for file in os.listdir(DIR):
     if not file.endswith(".gz"):
         continue
 
+    print(f"Processing {file}...")
+
     # upload to the database
     star_events.get_star_events(direct_path=f"{DIR}/{file}", keep_file=True)
     star_events.write_star_events()
