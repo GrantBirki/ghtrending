@@ -19,6 +19,7 @@ class StarEvents:
         """
         Initialize the StarEvents class
         """
+        self.prod = os.environ.get("ENV", False) == "production"
         self.log = self.log_config()
         self.conn, self.cursor = self.db_config()
         self.base_url = "https://data.gharchive.org"
@@ -65,7 +66,7 @@ class StarEvents:
         Database connections and configuration
         :return: connection and cursor objects
         """
-        if os.environ.get("ENV", "development") == "production":
+        if self.prod == True:
             conn = MySQLdb.connect(
                 host=os.environ.get("DB_HOST", "localhost"),
                 user=os.environ.get("DB_USERNAME"),
@@ -201,6 +202,9 @@ class StarEvents:
         skipped_events = 0
         failed_events = 0
 
+        if self.prod == True:
+            recent_events = self.get_recent_events()
+
         fmt_events = []
         for event in self.events:
             fmt_events.append(
@@ -214,7 +218,7 @@ class StarEvents:
                 )
             )
 
-        if os.environ.get("ENV", "development") == "production":
+        if self.prod == True:
             # planetscale query format
             query = "INSERT INTO stars VALUES (%s, %s, %s, %s, %s, %s)"
         else:
@@ -308,7 +312,7 @@ class StarEvents:
         """
         # Query the database to find the most stared repos during the given time period
         if not hours:
-            if os.environ.get("ENV", "development") == "production":
+            if self.prod == True:
                 # planetscale query format
                 query = "SELECT repo_name, COUNT(*) AS count FROM stars GROUP BY repo_name ORDER BY count DESC LIMIT %s"
             else:
@@ -322,7 +326,7 @@ class StarEvents:
             )
         else:
             # if there is a hours value, get the most stared repos for the given time period
-            if os.environ.get("ENV", "development") == "production":
+            if self.prod == True:
                 # planetscale query format
                 query = "SELECT repo_name, COUNT(*) AS count FROM stars WHERE created_at between %s and %s GROUP BY repo_name ORDER BY count DESC LIMIT %s"
             else:
