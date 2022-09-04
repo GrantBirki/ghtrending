@@ -34,14 +34,14 @@ jobs:
         run: npm ci
 
       - name: build
-        run: npm run build-prod
+        run: npm run build
 
       - name: deploy
         uses: cloudflare/wrangler-action@4c10c1822abba527d820b29e6333e7f5dac2cabd # pin@2.0.0
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
-          command: pages publish out/ --project-name=ghtrending --branch=main --commit-dirty=true
+          command: pages publish build/ --project-name=ghtrending --branch=main --commit-dirty=true
       # - name: CDN Purge
       #   uses: jakejarvis/cloudflare-purge-action@eee6dba0236093358f25bb1581bd615dc8b3d8e3 # pin@v0.3.0
       #   env:

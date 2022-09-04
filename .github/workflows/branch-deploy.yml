@@ -52,7 +52,7 @@ jobs:
 
       - name: build
         if: ${{ steps.branch-deploy.outputs.continue == 'true' }}
-        run: npm run build-prod
+        run: npm run build
 
       - name: deploy - dev
         id: dev-deploy
@@ -63,7 +63,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
-          command: pages publish out/ --project-name=ghtrending --commit-dirty=true
+          command: pages publish build/ --project-name=ghtrending --commit-dirty=true
 
       - name: deploy - prod
         id: prod-deploy
@@ -74,4 +74,4 @@ jobs:
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
-          command: pages publish out/ --project-name=ghtrending --branch=main --commit-dirty=true
+          command: pages publish build/ --project-name=ghtrending --branch=main --commit-dirty=true
