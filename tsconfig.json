@@ -46,6 +46,8 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
+    "**/*.js",
+    "**/*.jsx",
     "src/utils/AppConfig.js",
     "src/layouts/Meta.test.jsx",
     "src/layouts/Meta.jsx",
