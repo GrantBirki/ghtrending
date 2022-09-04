@@ -6,6 +6,7 @@ import sqlite3
 import sys
 from datetime import datetime, timedelta
 
+import MySQLdb
 import requests
 
 
@@ -31,9 +32,9 @@ class StarEvents:
         """
         # create a logger for the StarEvents class
         logger = logging.getLogger("StarEvents")
-    
+
         # set the logging level
-        log_level = os.environ.get('LOG_LEVEL', 'INFO').upper()
+        log_level = os.environ.get("LOG_LEVEL", "INFO").upper()
         logger.setLevel(level=log_level)
 
         # log to stdout
@@ -44,7 +45,7 @@ class StarEvents:
             "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
         )
         handler.setFormatter(formatter)
-        
+
         # add the handler to the logger
         logger.addHandler(handler)
 
@@ -56,10 +57,16 @@ class StarEvents:
         Database connections and configuration
         :return: connection and cursor objects
         """
-
         if os.environ.get("ENV", "development") == "production":
-            conn = None  # TODO
-            cursor = None  # TODO
+            conn = MySQLdb.connect(
+                host=os.environ.get("DB_HOST", "localhost"),
+                user=os.environ.get("DB_USERNAME"),
+                passwd=os.environ.get("DB_PASSWORD"),
+                db=os.environ.get("DATABASE_NAME"),
+                ssl_mode="VERIFY_IDENTITY",
+                ssl={"ca": "/etc/ssl/cert.pem"},
+            )
+            cursor = conn.cursor()
         else:
             # connect to the local sqlite database
             conn = sqlite3.connect("data/ghtrending.db")
@@ -89,13 +96,14 @@ class StarEvents:
         :param timestamp: timestamp to format (String or None)
         :return: formatted timestamp in gharchive format
         """
-
         if timestamp:
             # If the timestamp is provided, use it
             return timestamp
         else:
             # Subtract hour value from the current date and time and use UTC
-            timestamp = (datetime.utcnow() - timedelta(hours=self.hours)).strftime("%Y-%m-%d-%H")
+            timestamp = (datetime.utcnow() - timedelta(hours=self.hours)).strftime(
+                "%Y-%m-%d-%H"
+            )
 
         seperated = timestamp.split("-")
         hour = seperated[3]
@@ -143,7 +151,6 @@ class StarEvents:
         :param direct_path: path to the gharchive file
         :param keep_file: keep the downloaded file
         """
-
         events = []
 
         if direct_path:
@@ -179,6 +186,10 @@ class StarEvents:
         self.events = events
 
     def write_star_events(self):
+        """
+        Helper function to use the values in self.events to write to the database
+        Loops through all events and commits them to the database
+        """
         skipped_events = 0
 
         # write all events to the stars table in the ghtrending database, continue if the event already exists in the database table
@@ -201,7 +212,9 @@ class StarEvents:
                 continue
 
         if skipped_events:
-            self.log.info(f"Skipped {skipped_events} duplicate events (already in the DB)")
+            self.log.info(
+                f"Skipped {skipped_events} duplicate events (already in the DB)"
+            )
 
         # commit the changes
         self.conn.commit()
@@ -225,7 +238,6 @@ class StarEvents:
         :param hours: a time period to limit the results to
         :return: list of most stared repositories
         """
-
         # Query the database to find the most stared repos during the given time period
         if not hours:
             # if there is no hours value, get the most stared repos for all time
@@ -235,7 +247,7 @@ class StarEvents:
             )
         else:
             # if there is a hours value, get the most stared repos for the given time period
-            if os.environ.get('ENV', 'development') == 'production':
+            if os.environ.get("ENV", "development") == "production":
                 # TODO
                 pass
             else:
@@ -246,7 +258,11 @@ class StarEvents:
             start = end - timedelta(hours=hours)
             self.cursor.execute(
                 query,
-                (start.strftime("%Y-%m-%dT%H:%M:%S"), end.strftime("%Y-%m-%dT%H:%M:%S"), limit),
+                (
+                    start.strftime("%Y-%m-%dT%H:%M:%S"),
+                    end.strftime("%Y-%m-%dT%H:%M:%S"),
+                    limit,
+                ),
             )
 
         # return the result
