@@ -1,0 +1,60 @@
+name: branch-deploy
+
+on:
+  issue_comment:
+    types: [ created ]
+
+# Permissions needed for reacting and adding comments for IssueOps commands
+permissions:
+  pull-requests: write
+  deployments: write
+  contents: write
+
+jobs:
+  deploy:
+    environment: secrets
+    if: ${{ github.event.issue.pull_request }} # only run on pull request comments
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - uses: github/branch-deploy@5830dad45b2ce5a8c967f9a1ef8c8df062dac236 # pin@v2.4.0
+        id: branch-deploy
+        with:
+          admins: grantbirki
+
+      - name: checkout
+        if: ${{ steps.branch-deploy.outputs.continue == 'true' }}
+        uses: actions/checkout@7884fcad6b5d53d10323aee724dc68d8b9096a2e # pin@v2
+        with:
+          ref: ${{ steps.branch-deploy.outputs.ref }}
+
+      - name: install
+        if: ${{ steps.branch-deploy.outputs.continue == 'true' }}
+        run: npm ci
+
+      - name: build
+        if: ${{ steps.branch-deploy.outputs.continue == 'true' }}
+        run: npm run build
+
+      - name: deploy - dev
+        id: dev-deploy
+        if: ${{ steps.branch-deploy.outputs.continue == 'true' &&
+          steps.branch-deploy.outputs.noop != 'true' &&
+          steps.branch-deploy.outputs.environment == 'development' }}
+        uses: cloudflare/wrangler-action@4c10c1822abba527d820b29e6333e7f5dac2cabd # pin@2.0.0
+        with:
+          apiToken: ${{ secrets.CF_API_TOKEN }}
+          accountId: ${{ secrets.CF_ACCOUNT_ID }}
+          command: pages publish out/ --project-name=ghtrending
+
+      - name: deploy - prod
+        id: prod-deploy
+        if: ${{ steps.branch-deploy.outputs.continue == 'true' &&
+          steps.branch-deploy.outputs.noop != 'true' &&
+          steps.branch-deploy.outputs.environment == 'production' }}
+        uses: cloudflare/wrangler-action@4c10c1822abba527d820b29e6333e7f5dac2cabd # pin@2.0.0
+        with:
+          apiToken: ${{ secrets.CF_API_TOKEN }}
+          accountId: ${{ secrets.CF_ACCOUNT_ID }}
+          command: pages publish out/ --project-name=ghtrending --branch=main

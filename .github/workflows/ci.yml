@@ -1,0 +1,47 @@
+name: ci
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    if: github.event_name == 'push'
+    environment: production
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b # pin@v3.0.2
+
+      - name: cache node modules
+        uses: actions/cache@48af2dc4a9e8278b89d7fa154b955c30c6aaab09 # pin@v3.0.2
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+
+      - name: install
+        run: npm ci
+
+      - name: build
+        run: npm run build-prod
+
+      - name: deploy
+        uses: cloudflare/wrangler-action@4c10c1822abba527d820b29e6333e7f5dac2cabd # pin@2.0.0
+        with:
+          apiToken: ${{ secrets.CF_API_TOKEN }}
+          accountId: ${{ secrets.CF_ACCOUNT_ID }}
+          command: pages publish out/ --project-name=ghtrending --branch=main
+
+      # - name: CDN Purge
+      #   uses: jakejarvis/cloudflare-purge-action@eee6dba0236093358f25bb1581bd615dc8b3d8e3 # pin@v0.3.0
+      #   env:
+      #     CLOUDFLARE_ZONE: ${{ secrets.CLOUDFLARE_ZONE }}
+      #     CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_PURGE_TOKEN }}
+      #     PURGE_URLS: '["https://", "https://"]'
