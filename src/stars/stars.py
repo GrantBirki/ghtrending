@@ -202,11 +202,18 @@ class StarEvents:
         skipped_events = 0
         failed_events = 0
 
-        if self.prod == True:
-            recent_events = self.get_recent_events()
+        # prefetch recent events and compare them before attempting to insert
+        recent_events = self.get_recent_events()
+        recent_event_ids = [event[self.schema["id"]] for event in recent_events]
 
         fmt_events = []
         for event in self.events:
+
+            # if the event is already in the database, skip it
+            if event["id"] in recent_event_ids:
+                skipped_events += 1
+                continue
+
             fmt_events.append(
                 (
                     event["id"],
@@ -235,6 +242,10 @@ class StarEvents:
             self.log.warn(
                 "Bulk insert failed (likely due to a duplicate), trying one by one inserts instead"
             )
+
+            # we have to retry so we reset the counters
+            skipped_events = 0
+            failed_events = 0
 
             # loop through all events and commit them to the database
             for event in self.events:
@@ -277,16 +288,7 @@ class StarEvents:
             f"Committed {len(self.events) - skipped_events} changes to the database"
         )
 
-    def run(self):
-        """
-        Run the StarEvents class
-        This method will collect and store the GitHub star events in the database
-        """
-        self.get_star_events()
-        self.write_star_events()
-        self.close()
-
-    def get_recent_events(self, limit=5000, hours=None):
+    def get_recent_events(self, limit=10000, hours=None):
         """
         Query the database to get the most recent events that have been created
         :return: List of events
@@ -346,3 +348,12 @@ class StarEvents:
 
         # return the result
         return self.cursor.fetchall()
+
+    def run(self):
+        """
+        Run the StarEvents class
+        This method will collect and store the GitHub star events in the database
+        """
+        self.get_star_events()
+        self.write_star_events()
+        self.close()
