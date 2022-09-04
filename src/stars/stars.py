@@ -299,7 +299,7 @@ class StarEvents:
             # if there is a hours value, get the most stared repos for the given time period
             if os.environ.get("ENV", "development") == "production":
                 # planetscale query format
-                query = "SELECT repo_name, COUNT(*) AS count FROM stars WHERE(strftime('%Y-%m%dT%H:%M:%S', created_at) between strftime('%Y-%m%dT%H:%M:%S', %s) and strftime('%Y-%m%dT%H:%M:%S', %s)) GROUP BY repo_name ORDER BY count DESC LIMIT %s"
+                query = "SELECT repo_name, COUNT(*) AS count FROM stars WHERE created_at between %s and %s GROUP BY repo_name ORDER BY count DESC LIMIT %s"
             else:
                 # sqlite query format
                 query = "SELECT repo_name, COUNT(*) AS count FROM stars WHERE(strftime('%Y-%m%dT%H:%M:%S', created_at) between strftime('%Y-%m%dT%H:%M:%S', ?) and strftime('%Y-%m%dT%H:%M:%S', ?)) GROUP BY repo_name ORDER BY count DESC LIMIT ?"
