@@ -21,6 +21,16 @@ jobs:
 
       - name: stars cron
         run: python src/crons/stars_cron.py
+        env:
+          ENV: production
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DATABASE_NAME: ${{ secrets.DATABASE_NAME }}
 
       - name: sync to s3
         run: python src/crons/stars_trends_to_s3.py
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
