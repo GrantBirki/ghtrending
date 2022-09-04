@@ -1,5 +1,7 @@
 # ghtrending
 
+[![stars](https://github.com/GrantBirki/ghtrending/actions/workflows/stars.yml/badge.svg)](https://github.com/GrantBirki/ghtrending/actions/workflows/stars.yml)
+
 ## Usage 💻
 
 Run the following command from the root of the repository:
