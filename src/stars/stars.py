@@ -192,42 +192,74 @@ class StarEvents:
         """
         skipped_events = 0
 
-        # write all events to the stars table in the ghtrending database, continue if the event already exists in the database table
+        fmt_events = []
         for event in self.events:
-            try:
-                if os.environ.get("ENV", "development") == "production":
-                    # planetscale query format
-                    query = "INSERT INTO stars VALUES (%s, %s, %s, %s, %s, %s)"
-                else:
-                    # sqlite query format
-                    query = "INSERT INTO stars VALUES (?, ?, ?, ?, ?, ?)"
-
-                self.cursor.execute(
-                    query,
-                    (
-                        event["id"],
-                        event["actor_id"],
-                        event["actor_login"],
-                        event["repo_id"],
-                        event["repo_name"],
-                        event["created_at"],
-                    ),
+            fmt_events.append(
+                (
+                    event["id"],
+                    event["actor_id"],
+                    event["actor_login"],
+                    event["repo_id"],
+                    event["repo_name"],
+                    event["created_at"],
                 )
-            except sqlite3.IntegrityError:
-                self.log.debug(f"Event {event['id']} already exists in the database")
-                skipped_events += 1
-                continue
+            )
+
+        if os.environ.get("ENV", "development") == "production":
+            # planetscale query format
+            query = "INSERT INTO stars VALUES (%s, %s, %s, %s, %s, %s)"
+        else:
+            # sqlite query format
+            query = "INSERT INTO stars VALUES (?, ?, ?, ?, ?, ?)"
+
+        try:
+            self.cursor.executemany(
+                query,
+                fmt_events,
+            )
+            self.conn.commit()
+        except (MySQLdb.IntegrityError, sqlite3.IntegrityError):
+            self.log.warn(
+                "Bulk insert failed (likely due to a duplicate), trying one by one inserts instead"
+            )
+
+            # loop through all events and commit them to the database
+            for event in self.events:
+                try:
+                    self.cursor.execute(
+                        query,
+                        (
+                            event["id"],
+                            event["actor_id"],
+                            event["actor_login"],
+                            event["repo_id"],
+                            event["repo_name"],
+                            event["created_at"],
+                        ),
+                    )
+                except (MySQLdb.IntegrityError, sqlite3.IntegrityError):
+                    self.log.debug(
+                        f"Event {event['id']} already exists in the database"
+                    )
+                    skipped_events += 1
+                    continue
+
+                except Exception as e:
+                    self.log.error(f"Error inserting event {event['id']} - {e}")
+                    skipped_events += 1
+                    continue
 
         if skipped_events:
             self.log.info(
                 f"Skipped {skipped_events} duplicate events (already in the DB)"
             )
 
-        # commit the changes
         self.conn.commit()
 
         # get the number of changes
-        self.log.info(f"Committed {self.conn.total_changes} changes to the database")
+        self.log.info(
+            f"Committed {len(self.events) - skipped_events} changes to the database"
+        )
 
     def run(self):
         """
