@@ -191,6 +191,7 @@ class StarEvents:
         Loops through all events and commits them to the database
         """
         skipped_events = 0
+        failed_events = 0
 
         fmt_events = []
         for event in self.events:
@@ -246,13 +247,16 @@ class StarEvents:
 
                 except Exception as e:
                     self.log.error(f"Error inserting event {event['id']} - {e}")
-                    skipped_events += 1
+                    failed_events += 1
                     continue
 
         if skipped_events:
             self.log.info(
                 f"Skipped {skipped_events} duplicate events (already in the DB)"
             )
+
+        if failed_events:
+            self.log.info(f"Failed to commit {failed_events} events")
 
         self.conn.commit()
 
