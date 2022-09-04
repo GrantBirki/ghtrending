@@ -24,6 +24,14 @@ class StarEvents:
         self.base_url = "https://data.gharchive.org"
         self.hours = 2
         self.events = []
+        self.schema = {
+            "id": 0,
+            "actor_id": 1,
+            "actor_login": 2,
+            "repo_id": 3,
+            "repo_name": 4,
+            "created_at": 5,
+        }
 
     def log_config(self):
         """
@@ -273,6 +281,23 @@ class StarEvents:
         self.get_star_events()
         self.write_star_events()
         self.close()
+
+    def get_recent_events(self, limit=5000, hours=None):
+        """
+        Query the database to get the most recent events that have been created
+        :return: List of events
+        """
+        if hours:
+            timestamp = datetime.utcnow() - timedelta(hours=hours)
+        else:
+            timestamp = datetime.utcnow() - timedelta(hours=self.hours)
+
+        query = f"SELECT * FROM stars WHERE created_at > '{timestamp}' ORDER BY created_at DESC LIMIT {limit}"
+
+        self.cursor.execute(query)
+        events = self.cursor.fetchall()
+
+        return events
 
     def get_most_stared(self, limit=20, hours=None):
         """
