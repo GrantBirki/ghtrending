@@ -2,7 +2,7 @@ import sys
 import os
 from pathlib import Path
 
-path_to_utils = Path(__file__).parent.parent / "src/stars"
+path_to_utils = Path(__file__).parent.parent / "lib/stars"
 sys.path.insert(0, str(path_to_utils))
 
 from stars import StarEvents
