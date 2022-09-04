@@ -30,7 +30,7 @@ jobs:
           DATABASE_NAME: ${{ secrets.DATABASE_NAME }}
 
       - name: sync to s3
-        run: python src/crons/stars_trends_to_s3.py
+        run: python src/crons/star_trends_to_s3.py
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
