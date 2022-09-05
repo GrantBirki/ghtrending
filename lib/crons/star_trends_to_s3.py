@@ -52,6 +52,7 @@ def set_cache_control():
             },
             Metadata=obj.metadata,  # This copies existing metadata
             CacheControl=f"public,max-age={CACHE_CONTROL}",
+            ContentType="application/json",
             MetadataDirective="REPLACE",
         )
 
