@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Link, Text } from "@primer/react";
-
+import { RepoIcon, StarIcon } from "@primer/octicons-react";
 import fetchStars from "../../services/fetchStars";
 import "./index.css";
-import LanguageColor from "../language-color"
+import LanguageColor from "../language-color";
 
 function Stars() {
   const [stars, setStars] = useState("");
@@ -22,7 +22,7 @@ function Stars() {
   }, []);
 
   if (!stars) {
-    return <div>Loading...</div>;
+    return <div key={"loading-stars"}>Loading...</div>;
   }
 
   return (
@@ -32,33 +32,83 @@ function Stars() {
         let repoName = star.repo_name.split("/")[1];
         let langFmt = star.language;
         if (langFmt === null) {
-            langFmt = "Other";
+          langFmt = "Other";
         }
 
         return (
           <>
-            <div className="table-row">
-              <Link sx={{ fontSize: 3 }} href={star.repo_url}>
-                <Text as="span">{repoOwner}</Text>
-                <Text as="span"> / </Text>
-                <Text as="span" fontWeight="bold">
+            <div className="table-row" key={`${star.repo_url}-repo-row-div`}>
+              <Text
+                key={`${star.repo_url}-repo-icon-text`}
+                sx={{
+                  marginRight: "7px",
+                }}
+                as={"span"}
+              >
+                <RepoIcon key={`${star.repo_url}-repo-icon`} size={16} />
+              </Text>
+              <Link
+                key={`${star.repo_url}-repo-link`}
+                sx={{ fontSize: 3 }}
+                href={star.repo_url}
+              >
+                <Text key={`${star.repo_url}-repo-owner`} as="span">
+                  {repoOwner}
+                </Text>
+                <Text key={`${star.repo_url}-repo-slash`} as="span">
+                  {" "}
+                  /{" "}
+                </Text>
+                <Text
+                  key={`${star.repo_url}-repo-name`}
+                  as="span"
+                  fontWeight="bold"
+                >
                   {repoName}
                 </Text>
               </Link>
               <Text
+                key={`${star.repo_url}-repo-desc`}
                 sx={{
                   marginTop: "3px",
                   marginBottom: "3px",
                 }}
                 as={"p"}
-                color="neutral"
               >
                 {star.description}
               </Text>
-              <div className="f6 color-fg-muted mt-2">
-                <LanguageColor lang={star.language}/>
-                <Text fontSize={"12px"} color="neutral.emphasisPlus" as="span">
+              <div
+                key={`${star.repo_url}-repo-info-div`}
+                className="f6 color-fg-muted mt-2"
+              >
+                <LanguageColor
+                  key={`${star.repo_url}-repo-lang-comp`}
+                  lang={star.language}
+                  repo_url={star.repo_url}
+                />
+                <Text
+                  key={`${star.repo_url}-repo-langfmt`}
+                  fontSize={"12px"}
+                  color="neutral.emphasisPlus"
+                  as="span"
+                >
                   {langFmt}
+                </Text>
+                <Text
+                  key={`${star.repo_url}-repo-stars-count-wrapper`}
+                  sx={{ float: "right" }}
+                >
+                  <Text
+                    key={`${star.repo_url}-repo-stars-count-wrapper-margin`}
+                    as="span"
+                    sx={{ marginRight: "4px" }}
+                  >
+                    <StarIcon
+                      key={`${star.repo_url}-repo-stars-count-icon`}
+                      size={16}
+                    />
+                  </Text>
+                  {star.stars} stars today
                 </Text>
               </div>
             </div>

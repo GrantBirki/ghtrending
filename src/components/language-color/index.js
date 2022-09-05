@@ -11,6 +11,7 @@ function LanguageColor(props) {
   } catch {
     return (
       <span
+        key={`${props.repo_url}-language-color`}
         style={{ backgroundColor: "#808080" }}
         className="repo-language-color"
       ></span>
@@ -20,6 +21,7 @@ function LanguageColor(props) {
   if (color === undefined || color === null) {
     return (
       <span
+        key={`${props.repo_url}-language-color`}
         style={{ backgroundColor: "#808080" }}
         className="repo-language-color"
       ></span>
@@ -28,6 +30,7 @@ function LanguageColor(props) {
 
   return (
     <span
+      key={`${props.repo_url}-language-color`}
       style={{ backgroundColor: color }}
       className="repo-language-color"
     ></span>
