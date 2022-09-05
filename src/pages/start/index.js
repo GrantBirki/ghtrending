@@ -10,7 +10,11 @@ function Start() {
     <>
       <MainHeader />
       <Box bg="canvas.default" className="center">
-        <Box bg="canvas.subtle" className="border-bottom main-header">
+        <Box
+          bg="canvas.subtle"
+          borderColor={"fg.subtle"}
+          className="border-bottom main-header"
+        >
           <Heading as={"h1"} sx={{ fontSize: 5 }}>
             Trending
           </Heading>
@@ -20,8 +24,12 @@ function Start() {
         </Box>
       </Box>
       <Box bg="canvas.default" className="primary-header">
-        <Box className="container-lg">
-          <Box bg="canvas.subtle" className="container-lg-header">
+        <Box className="container-lg" borderColor={"fg.subtle"}>
+          <Box
+            bg="canvas.subtle"
+            borderColor={"fg.subtle"}
+            className="container-lg-header"
+          >
             <Box></Box>
             <Box className="table-header-options">
               <DateRangeToggle />

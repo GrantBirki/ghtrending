@@ -20,15 +20,10 @@ code {
 }
 
 .border-bottom {
-  border-bottom: 1px solid #444c56 !important;
+  border-bottom: 1px solid;
 }
 
 .main-header {
   padding-top: 2rem;
   padding-bottom: 2rem;
-}
-
-/* maybe replace this with a native primer react style component */
-.bg-color-muted {
-  background-color: #2c323b;
 }
