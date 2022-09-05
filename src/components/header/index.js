@@ -1,4 +1,4 @@
-import { Header, StyledOcticon } from "@primer/react";
+import { Header, StyledOcticon, Text } from "@primer/react";
 import { StarIcon } from "@primer/octicons-react";
 
 function MainHeader() {
@@ -14,7 +14,7 @@ function MainHeader() {
         }}
       >
         <StyledOcticon icon={StarIcon} size={32} sx={{ mr: 2 }} />
-        <span>GitHub Trending</span>
+        <Text as={"span"}>GitHub Trending</Text>
       </Header.Item>
     </Header>
   );

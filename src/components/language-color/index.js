@@ -1,3 +1,4 @@
+import { Text } from "@primer/react";
 import "./index.css";
 
 function LanguageColor(props) {
@@ -10,30 +11,33 @@ function LanguageColor(props) {
     color = lang.color;
   } catch {
     return (
-      <span
+      <Text
+        as={"span"}
         key={`${props.repo_url}-language-color`}
         style={{ backgroundColor: "#808080" }}
         className="repo-language-color"
-      ></span>
+      ></Text>
     );
   }
 
   if (color === undefined || color === null) {
     return (
-      <span
+      <Text
+        as={"span"}
         key={`${props.repo_url}-language-color`}
         style={{ backgroundColor: "#808080" }}
         className="repo-language-color"
-      ></span>
+      ></Text>
     );
   }
 
   return (
-    <span
+    <Text
+      as={"span"}
       key={`${props.repo_url}-language-color`}
       style={{ backgroundColor: color }}
       className="repo-language-color"
-    ></span>
+    ></Text>
   );
 }
 

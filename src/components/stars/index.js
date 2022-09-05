@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, Text } from "@primer/react";
+import { Link, Text, Box } from "@primer/react";
 import { RepoIcon, StarIcon } from "@primer/octicons-react";
 import fetchStars from "../../services/fetchStars";
 import "./index.css";
@@ -37,7 +37,7 @@ function Stars() {
 
         return (
           <>
-            <div className="table-row" key={`${star.repo_url}-repo-row-div`}>
+            <Box className="table-row" key={`${star.repo_url}-repo-row-div`}>
               <Text
                 key={`${star.repo_url}-repo-icon-text`}
                 sx={{
@@ -77,7 +77,7 @@ function Stars() {
               >
                 {star.description}
               </Text>
-              <div
+              <Box
                 key={`${star.repo_url}-repo-info-div`}
               >
                 <LanguageColor
@@ -109,8 +109,8 @@ function Stars() {
                   </Text>
                   {star.stars} stars today
                 </Text>
-              </div>
-            </div>
+              </Box>
+            </Box>
           </>
         );
       })}
