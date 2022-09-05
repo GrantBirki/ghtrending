@@ -10,6 +10,7 @@ sys.path.insert(0, str(path_to_utils))
 
 from stars import StarEvents
 
+GH_TOKEN = os.environ.get("GH_TOKEN", None)
 AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID", None)
 AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY", None)
 BUCKET_NAME = os.environ.get("BUCKET_NAME", "data.ghtrending.io")
@@ -60,6 +61,10 @@ def set_cache_control():
 def main():
     if AWS_ACCESS_KEY_ID is None or AWS_SECRET_ACCESS_KEY is None:
         print("AWS credentials not set. Exiting.")
+        sys.exit(1)
+
+    if GH_TOKEN is None:
+        print("GH_TOKEN not set. Exiting.")
         sys.exit(1)
 
     # Get Star Event Trends
