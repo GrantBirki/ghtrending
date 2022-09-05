@@ -35,27 +35,8 @@ def upload_to_s3(result):
         Key=f"{STAR_TRENDS_PATH}/{result['name']}.json",
         Body=json.dumps(result["data"]),
         ContentType="application/json",
+        CacheControl=f"public,max-age={CACHE_CONTROL}",
     )
-
-
-def set_cache_control():
-    """
-    Sets cache control headers for all objects in the STAR_TRENDS_PATH/* directory
-    """
-    s3 = boto3.resource("s3")
-    bucket = s3.Bucket(BUCKET_NAME)
-    for summary in bucket.objects.filter(Prefix=f"{STAR_TRENDS_PATH}/"):
-        obj = summary.Object()
-        obj.copy_from(
-            CopySource={
-                "Bucket": BUCKET_NAME,
-                "Key": obj.key,
-            },
-            Metadata=obj.metadata,  # This copies existing metadata
-            CacheControl=f"public,max-age={CACHE_CONTROL}",
-            ContentType="application/json",
-            MetadataDirective="REPLACE",
-        )
 
 
 def main():
@@ -100,10 +81,6 @@ def main():
     print("Uploading to S3...")
     for result in results:
         upload_to_s3(result)
-
-    print(f"Setting Cache-Control for {STAR_TRENDS_PATH}/* objects...")
-
-    set_cache_control()
 
     print("Done!")
 
