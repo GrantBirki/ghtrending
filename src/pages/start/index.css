@@ -31,3 +31,17 @@
 .table-header-options {
   display: inline-flex;
 }
+
+/* if mobile */
+@media (max-width: 768px) {
+  .container-lg {
+    max-width: 90%;
+  }
+}
+
+/* if tablet */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .container-lg {
+    max-width: 85%;
+  }
+}
