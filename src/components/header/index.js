@@ -41,7 +41,7 @@ function MainHeader() {
         <Text>GitHub Trending</Text>
       </Header.Item>
       <Header.Item>
-        <Header.Link href="#">About</Header.Link>
+        <Header.Link href="/about">About</Header.Link>
       </Header.Item>
       <Header.Item full>
         <Header.Link href="https://github.com/GrantBirki/ghtrending">
