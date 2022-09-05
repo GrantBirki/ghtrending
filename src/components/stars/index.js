@@ -71,6 +71,7 @@ function Stars() {
               <Box key={`${keyIndex}-repo-info-div`}>
                 <LanguageColor
                   key={`${keyIndex}-repo-lang-comp`}
+                  keyIndex={`${keyIndex}-repo-lang-comp`}
                   lang={star.language}
                   repo_url={star.repo_url}
                 />
