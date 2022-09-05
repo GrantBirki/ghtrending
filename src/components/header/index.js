@@ -3,18 +3,14 @@ import { StarIcon } from "@primer/octicons-react";
 
 function MainHeader() {
   return (
-    <Header
-      sx={{
-        backgroundColor: "checks.bg",
-      }}
-    >
+    <Header>
       <Header.Item
         sx={{
           fontSize: 2,
         }}
       >
         <StyledOcticon icon={StarIcon} size={32} sx={{ mr: 2 }} />
-        <Text as={"span"}>GitHub Trending</Text>
+        <Text>GitHub Trending</Text>
       </Header.Item>
     </Header>
   );

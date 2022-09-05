@@ -43,7 +43,6 @@ function Stars() {
                 sx={{
                   marginRight: "7px",
                 }}
-                as={"span"}
               >
                 <RepoIcon key={`${star.repo_url}-repo-icon`} size={16} />
               </Text>
@@ -52,18 +51,9 @@ function Stars() {
                 sx={{ fontSize: 3 }}
                 href={star.repo_url}
               >
-                <Text key={`${star.repo_url}-repo-owner`} as="span">
-                  {repoOwner}
-                </Text>
-                <Text key={`${star.repo_url}-repo-slash`} as="span">
-                  {" "}
-                  /{" "}
-                </Text>
-                <Text
-                  key={`${star.repo_url}-repo-name`}
-                  as="span"
-                  fontWeight="bold"
-                >
+                <Text key={`${star.repo_url}-repo-owner`}>{repoOwner}</Text>
+                <Text key={`${star.repo_url}-repo-slash`}> / </Text>
+                <Text key={`${star.repo_url}-repo-name`} fontWeight="bold">
                   {repoName}
                 </Text>
               </Link>
@@ -77,9 +67,7 @@ function Stars() {
               >
                 {star.description}
               </Text>
-              <Box
-                key={`${star.repo_url}-repo-info-div`}
-              >
+              <Box key={`${star.repo_url}-repo-info-div`}>
                 <LanguageColor
                   key={`${star.repo_url}-repo-lang-comp`}
                   lang={star.language}
@@ -89,7 +77,6 @@ function Stars() {
                   key={`${star.repo_url}-repo-langfmt`}
                   fontSize={"12px"}
                   color="neutral.emphasisPlus"
-                  as="span"
                 >
                   {langFmt}
                 </Text>
@@ -99,7 +86,6 @@ function Stars() {
                 >
                   <Text
                     key={`${star.repo_url}-repo-stars-count-wrapper-margin`}
-                    as="span"
                     sx={{ marginRight: "4px" }}
                   >
                     <StarIcon
