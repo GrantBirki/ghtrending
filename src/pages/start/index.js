@@ -1,5 +1,6 @@
-import { Box, ActionList } from "@primer/react";
+import { Box } from "@primer/react";
 import DateRangeToggle from "../../components/date-range";
+import Stars from "../../components/stars";
 
 import "./index.css";
 
@@ -23,16 +24,7 @@ function Start() {
             </div>
           </div>
           <div className="container-table">
-            <ActionList>
-              <ActionList.Item>Last 24 hours</ActionList.Item>
-              <ActionList.Item>Last 7 days</ActionList.Item>
-              <ActionList.Item>Last 30 days</ActionList.Item>
-              <ActionList.Item
-                onSelect={(event) => console.log("Date range changed TODO")}
-              >
-                All time
-              </ActionList.Item>
-            </ActionList>
+            <Stars />
           </div>
         </div>
       </Box>
