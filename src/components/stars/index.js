@@ -122,11 +122,7 @@ function Stars() {
                       lang={star.language}
                       repo_url={star.repo_url}
                     />
-                    <Text
-                      key={`${keyIndex}-repo-langfmt`}
-                      fontSize={"12px"}
-                      color="neutral.emphasisPlus"
-                    >
+                    <Text key={`${keyIndex}-repo-langfmt`} fontSize={"12px"}>
                       {langFmt}
                     </Text>
                     <Text
