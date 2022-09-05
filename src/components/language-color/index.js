@@ -11,7 +11,7 @@ function LanguageColor(props) {
   } catch {
     return (
       <span
-        style={{ backgroundColor: "#FFF" }}
+        style={{ backgroundColor: "#808080" }}
         className="repo-language-color"
       ></span>
     );
@@ -20,7 +20,7 @@ function LanguageColor(props) {
   if (color === undefined || color === null) {
     return (
       <span
-        style={{ backgroundColor: "#FFF" }}
+        style={{ backgroundColor: "#808080" }}
         className="repo-language-color"
       ></span>
     );

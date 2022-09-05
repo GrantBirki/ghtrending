@@ -30,6 +30,10 @@ function Stars() {
       {stars.map((star) => {
         let repoOwner = star.repo_name.split("/")[0];
         let repoName = star.repo_name.split("/")[1];
+        let langFmt = star.language;
+        if (langFmt === null) {
+            langFmt = "Other";
+        }
 
         return (
           <>
@@ -54,7 +58,7 @@ function Stars() {
               <div className="f6 color-fg-muted mt-2">
                 <LanguageColor lang={star.language}/>
                 <Text fontSize={"12px"} color="neutral.emphasisPlus" as="span">
-                  {star.language}
+                  {langFmt}
                 </Text>
               </div>
             </div>
