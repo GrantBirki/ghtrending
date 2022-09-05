@@ -11,9 +11,9 @@ import { StarIcon } from "@primer/octicons-react";
 function MainHeader() {
   const { setColorMode, colorScheme } = useTheme();
 
-  var checked = false
+  var checked = false;
   if (colorScheme === "light") {
-    checked = true
+    checked = true;
   }
 
   const [isOn, setIsOn] = useState(checked);
@@ -37,8 +37,10 @@ function MainHeader() {
           fontSize: 2,
         }}
       >
-        <StyledOcticon icon={StarIcon} size={32} sx={{ mr: 2 }} />
-        <Text>GitHub Trending</Text>
+        <Header.Link href="/">
+          <StyledOcticon icon={StarIcon} size={32} sx={{ mr: 2 }} />
+          <Text>GitHub Trending</Text>
+        </Header.Link>
       </Header.Item>
       <Header.Item>
         <Header.Link href="/about">About</Header.Link>
