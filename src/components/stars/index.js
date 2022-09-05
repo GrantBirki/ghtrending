@@ -79,7 +79,6 @@ function Stars() {
               </Text>
               <div
                 key={`${star.repo_url}-repo-info-div`}
-                className="f6 color-fg-muted mt-2"
               >
                 <LanguageColor
                   key={`${star.repo_url}-repo-lang-comp`}

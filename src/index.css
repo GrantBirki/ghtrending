@@ -29,6 +29,7 @@ code {
   padding-bottom: 2rem;
 }
 
+/* maybe replace this with a native primer react style component */
 .bg-color-muted {
   background-color: #2c323b;
 }

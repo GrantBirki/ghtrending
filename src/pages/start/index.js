@@ -10,7 +10,7 @@ function Start() {
       <div className="center">
         <div className="border-bottom main-header bg-color-muted">
           <h1>Trending</h1>
-          <p className="f4 color-fg-muted col-md-6 mx-auto">
+          <p>
             See what the GitHub community is most excited about today.
           </p>
         </div>
