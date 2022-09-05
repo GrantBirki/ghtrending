@@ -27,8 +27,8 @@ function Stars() {
 
   return (
     <>
-      {stars.map((star, index) => {
-        var keyIndex = `${star.repo_name}-${index}`;
+      {stars.map((star) => {
+        var keyIndex = `${star.repo_name}`;
         let repoOwner = star.repo_name.split("/")[0];
         let repoName = star.repo_name.split("/")[1];
         let langFmt = star.language;
@@ -37,69 +37,67 @@ function Stars() {
         }
 
         return (
-          <>
-            <Box className="table-row" key={`${keyIndex}-repo-row-div`}>
-              <Text
-                key={`${keyIndex}-repo-icon-text`}
-                sx={{
-                  marginRight: "7px",
-                }}
-              >
-                <RepoIcon key={`${keyIndex}-repo-icon`} size={16} />
+          <Box className="table-row" key={`${keyIndex}-repo-row-div`}>
+            <Text
+              key={`${keyIndex}-repo-icon-text`}
+              sx={{
+                marginRight: "7px",
+              }}
+            >
+              <RepoIcon key={`${keyIndex}-repo-icon`} size={16} />
+            </Text>
+            <Link
+              key={`${keyIndex}-repo-link`}
+              sx={{ fontSize: 3 }}
+              href={star.repo_url}
+            >
+              <Text key={`${keyIndex}-repo-owner`}>{repoOwner}</Text>
+              <Text key={`${keyIndex}-repo-slash`}> / </Text>
+              <Text key={`${keyIndex}-repo-name`} fontWeight="bold">
+                {repoName}
               </Text>
-              <Link
-                key={`${keyIndex}-repo-link`}
-                sx={{ fontSize: 3 }}
-                href={star.repo_url}
-              >
-                <Text key={`${keyIndex}-repo-owner`}>{repoOwner}</Text>
-                <Text key={`${keyIndex}-repo-slash`}> / </Text>
-                <Text key={`${keyIndex}-repo-name`} fontWeight="bold">
-                  {repoName}
-                </Text>
-              </Link>
+            </Link>
+            <Text
+              key={`${keyIndex}-repo-desc`}
+              sx={{
+                marginTop: "3px",
+                marginBottom: "3px",
+              }}
+              as={"p"}
+            >
+              {star.description}
+            </Text>
+            <Box key={`${keyIndex}-repo-info-div`}>
+              <LanguageColor
+                key={`${keyIndex}-repo-lang-comp`}
+                keyIndex={`${keyIndex}-repo-lang-comp`}
+                lang={star.language}
+                repo_url={star.repo_url}
+              />
               <Text
-                key={`${keyIndex}-repo-desc`}
-                sx={{
-                  marginTop: "3px",
-                  marginBottom: "3px",
-                }}
-                as={"p"}
+                key={`${keyIndex}-repo-langfmt`}
+                fontSize={"12px"}
+                color="neutral.emphasisPlus"
               >
-                {star.description}
+                {langFmt}
               </Text>
-              <Box key={`${keyIndex}-repo-info-div`}>
-                <LanguageColor
-                  key={`${keyIndex}-repo-lang-comp`}
-                  keyIndex={`${keyIndex}-repo-lang-comp`}
-                  lang={star.language}
-                  repo_url={star.repo_url}
-                />
+              <Text
+                key={`${keyIndex}-repo-stars-count-wrapper`}
+                sx={{ float: "right" }}
+              >
                 <Text
-                  key={`${keyIndex}-repo-langfmt`}
-                  fontSize={"12px"}
-                  color="neutral.emphasisPlus"
+                  key={`${keyIndex}-repo-stars-count-wrapper-margin`}
+                  sx={{ marginRight: "4px" }}
                 >
-                  {langFmt}
+                  <StarIcon
+                    key={`${keyIndex}-repo-stars-count-icon`}
+                    size={16}
+                  />
                 </Text>
-                <Text
-                  key={`${keyIndex}-repo-stars-count-wrapper`}
-                  sx={{ float: "right" }}
-                >
-                  <Text
-                    key={`${keyIndex}-repo-stars-count-wrapper-margin`}
-                    sx={{ marginRight: "4px" }}
-                  >
-                    <StarIcon
-                      key={`${keyIndex}-repo-stars-count-icon`}
-                      size={16}
-                    />
-                  </Text>
-                  {star.stars} stars today
-                </Text>
-              </Box>
+                {star.stars} stars today
+              </Text>
             </Box>
-          </>
+          </Box>
         );
       })}
     </>
