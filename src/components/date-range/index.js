@@ -11,7 +11,7 @@ const fieldTypes = [
 ];
 
 function DateRangeToggle() {
-  const [selectedIndex, setSelectedIndex] = useState(1);
+  const [selectedIndex, setSelectedIndex] = useState(0);
   const selectedType = fieldTypes[selectedIndex];
 
   return (
