@@ -1,0 +1,33 @@
+.container-lg {
+  margin-right: auto;
+  margin-left: auto;
+  max-width: 70%;
+  border-style: solid;
+  border-width: 1px;
+  border-radius: 6px;
+  border-color: #444c56;
+  margin-top: 2rem;
+}
+
+.container-lg-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+  border-style: solid;
+  border-width: 1px;
+  border-color: #444c56;
+  margin: -1px -1px 0;
+}
+
+.container-table {
+  display: block;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.table-header-options {
+  display: inline-flex;
+}

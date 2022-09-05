@@ -5,6 +5,7 @@
   "author": "GrantBirki (https://github.com/GrantBirki)",
   "private": true,
   "dependencies": {
+    "@primer/octicons-react": "^17.5.0",
     "@primer/primitives": "^7.9.0",
     "@primer/react": "^35.8.0",
     "@testing-library/jest-dom": "^5.16.5",

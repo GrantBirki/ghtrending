@@ -1,17 +1,42 @@
 import { ActionMenu, ActionList } from "@primer/react";
+import { useState } from "react";
+import { CalendarIcon } from "@primer/octicons-react";
+import './index.css';
+
+const fieldTypes = [
+  { icon: CalendarIcon, name: "Last 24 hours" },
+  { icon: CalendarIcon, name: "Last 7 days" },
+  { icon: CalendarIcon, name: "Last 30 days" },
+  { icon: CalendarIcon, name: "All time" },
+];
 
 function DateRangeToggle() {
+  const [selectedIndex, setSelectedIndex] = useState(1);
+  const selectedType = fieldTypes[selectedIndex];
+
   return (
     <ActionMenu>
-      <ActionMenu.Button>Date range</ActionMenu.Button>
-      <ActionMenu.Overlay>
-        <ActionList>
-          <ActionList.Item>Last 24 hours</ActionList.Item>
-          <ActionList.Item>Last 7 days</ActionList.Item>
-          <ActionList.Item>Last 30 days</ActionList.Item>
-          <ActionList.Item onSelect={(event) => console.log("Date range changed TODO")}>
-            All time
-          </ActionList.Item>
+      <ActionMenu.Button
+        aria-label="Date range"
+        leadingIcon={selectedType.icon}
+        className={"header-option"}
+      >
+        {selectedType.name}
+      </ActionMenu.Button>
+      <ActionMenu.Overlay width="medium">
+        <ActionList selectionVariant="single">
+          {fieldTypes.map((type, index) => (
+            <ActionList.Item
+              key={index}
+              selected={index === selectedIndex}
+              onSelect={() => setSelectedIndex(index)}
+            >
+              <ActionList.LeadingVisual>
+                <type.icon />
+              </ActionList.LeadingVisual>
+              {type.name}
+            </ActionList.Item>
+          ))}
         </ActionList>
       </ActionMenu.Overlay>
     </ActionMenu>
