@@ -2,17 +2,27 @@ import React, { useEffect, useState } from "react";
 import { Link, Text, Box } from "@primer/react";
 import { RepoIcon, StarIcon } from "@primer/octicons-react";
 import fetchStars from "../../services/fetchStars";
-import DateRangeToggle from "../date-range";
+import { ActionMenu, ActionList } from "@primer/react";
+import { CalendarIcon } from "@primer/octicons-react";
 import "./index.css";
 import LanguageColor from "../language-color";
 
+const fieldTypes = [
+  { icon: CalendarIcon, name: "Last 24 hours", value: "last_24_hours" },
+  { icon: CalendarIcon, name: "Last 7 days", value: "last_7_days" },
+  { icon: CalendarIcon, name: "Last 30 days", value: "last_30_days" },
+  { icon: CalendarIcon, name: "All time", value: "all_time" },
+];
+
 function Stars() {
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const selectedType = fieldTypes[selectedIndex];
   const [stars, setStars] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const json = await fetchStars("last_7_days");
+        const json = await fetchStars(selectedType.value);
         setStars(json);
       } catch (error) {
         console.log("error", error);
@@ -20,7 +30,7 @@ function Stars() {
     };
 
     fetchData();
-  }, []);
+  }, [selectedType.value]);
 
   if (!stars) {
     return <div key={"loading-stars"}>Loading...</div>;
@@ -37,7 +47,31 @@ function Stars() {
           >
             <Box></Box>
             <Box className="table-header-options">
-              <DateRangeToggle />
+              <ActionMenu>
+                <ActionMenu.Button
+                  aria-label="Date range"
+                  leadingIcon={selectedType.icon}
+                  className={"header-option"}
+                >
+                  {selectedType.name}
+                </ActionMenu.Button>
+                <ActionMenu.Overlay width="medium">
+                  <ActionList selectionVariant="single">
+                    {fieldTypes.map((type, index) => (
+                      <ActionList.Item
+                        key={index}
+                        selected={index === selectedIndex}
+                        onSelect={() => setSelectedIndex(index)}
+                      >
+                        <ActionList.LeadingVisual>
+                          <type.icon />
+                        </ActionList.LeadingVisual>
+                        {type.name}
+                      </ActionList.Item>
+                    ))}
+                  </ActionList>
+                </ActionMenu.Overlay>
+              </ActionMenu>
             </Box>
           </Box>
           <Box className="container-table">
