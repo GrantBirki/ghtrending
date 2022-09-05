@@ -3,6 +3,7 @@ import { Link, Text } from "@primer/react";
 
 import fetchStars from "../../services/fetchStars";
 import "./index.css";
+import LanguageColor from "../language-color"
 
 function Stars() {
   const [stars, setStars] = useState("");
@@ -51,6 +52,7 @@ function Stars() {
                 {star.description}
               </Text>
               <div className="f6 color-fg-muted mt-2">
+                <LanguageColor lang={star.language}/>
                 <Text fontSize={"12px"} color="neutral.emphasisPlus" as="span">
                   {star.language}
                 </Text>
