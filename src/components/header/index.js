@@ -9,8 +9,14 @@ import { useState } from "react";
 import { StarIcon } from "@primer/octicons-react";
 
 function MainHeader() {
-  const { setColorMode } = useTheme();
-  const [isOn, setIsOn] = useState(false);
+  const { setColorMode, colorScheme } = useTheme();
+
+  var checked = false
+  if (colorScheme === "light") {
+    checked = true
+  }
+
+  const [isOn, setIsOn] = useState(checked);
 
   const onClick = () => {
     setIsOn(!isOn);
@@ -44,6 +50,7 @@ function MainHeader() {
       </Header.Item>
       <Header.Item mr={0}>
         <ToggleSwitch
+          defaultChecked={isOn}
           onClick={onClick}
           onChange={handleSwitchChange}
           checked={isOn}
