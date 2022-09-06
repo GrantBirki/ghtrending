@@ -58,7 +58,7 @@ function Stars() {
 
   return (
     <>
-      <Box bg="canvas.default" className="primary-header">
+      <Box bg="canvas.default" className="primary-box">
         <Box className="container-lg" borderColor={"fg.subtle"}>
           <Box
             bg="canvas.subtle"

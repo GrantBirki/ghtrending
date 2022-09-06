@@ -29,8 +29,9 @@
   display: inline-flex;
 }
 
-.primary-header {
-  padding-top: 2rem;
+.primary-box {
+  padding-top: 3rem;
+  padding-bottom: 3rem;
 }
 
 /* if mobile */
