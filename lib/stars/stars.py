@@ -231,7 +231,9 @@ class StarEvents:
             )
 
         if len(fmt_events) == 0:
-            self.log.info("No new events to write to the database that are not duplicates")
+            self.log.info(
+                "No new events to write to the database that are not duplicates"
+            )
             return
 
         if self.prod == True:
@@ -394,6 +396,21 @@ class StarEvents:
 
             repo_data = resp.json()
 
+            # make an API call to get repo contributors data
+            contributors_resp = requests.get(
+                repo_data["contributors_url"], headers=headers
+            )
+
+            if contributors_resp.status_code != 200:
+                self.log.error(
+                    f"Error getting contributors enrichment data for {repo[0]} - HTTP: {contributors_resp.status_code}"
+                )
+                continue
+            contributors_resp = resp.json()
+
+            # only grab the first 10 contributors
+            contributors = contributors_resp[:10]
+
             most_stared_enriched.append(
                 {
                     "repo_name": repo[0],
@@ -408,6 +425,7 @@ class StarEvents:
                     "open_issues_count": repo_data["open_issues_count"],
                     "topics": repo_data["topics"],
                     "license": repo_data["license"],
+                    "contributors": contributors,
                 }
             )
 
