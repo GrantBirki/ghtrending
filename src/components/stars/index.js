@@ -168,18 +168,34 @@ function Stars() {
                       {langFmt}
                     </Text>
 
-                    {/* Stars Total */}
+                    {/* Stargazers total */}
                     <Text
-                      key={`${keyIndex}-repo-stars-count-wrapper-margin`}
+                      key={`${keyIndex}-repo-stargazers-total-wrapper-margin`}
                       sx={{ marginRight: "4px" }}
                     >
-                      <RepoForkedIcon
-                        key={`${keyIndex}-repo-stars-count-icon`}
+                      <StarIcon
+                        key={`${keyIndex}-repo-stargazers-total-icon`}
                         size={16}
                       />
                     </Text>
+                    <Text
+                      sx={{ marginRight: "26px" }}
+                      key={`${keyIndex}-repo-stargazers-total`}
+                      fontSize={"12px"}
+                    >
+                      {star.stargazers_count.toLocaleString()}
+                    </Text>
 
                     {/* Forks */}
+                    <Text
+                      key={`${keyIndex}-repo-forks-count-wrapper-margin`}
+                      sx={{ marginRight: "4px" }}
+                    >
+                      <RepoForkedIcon
+                        key={`${keyIndex}-repo-forks-count-icon`}
+                        size={16}
+                      />
+                    </Text>
                     <Text
                       sx={{ marginRight: "26px" }}
                       key={`${keyIndex}-repo-forks`}
@@ -189,19 +205,30 @@ function Stars() {
                     </Text>
 
                     {/* Contributors */}
+
                     {contributors && (
                       <Text
-                        sx={{ marginRight: "26px" }}
-                        key={`${keyIndex}-repo-langfmt`}
+                        sx={{ marginRight: "12px" }}
+                        key={`${keyIndex}-repo-built-by`}
                         fontSize={"12px"}
                       >
                         Built by
                       </Text>
                     )}
-                    {contributors &&
-                      contributors.map((contributor) => {
-                        return <Avatar src={contributor.avatar_url} />;
-                      })}
+                    <Text key={`${keyIndex}-avatar-stack-wrapper`}>
+                      <AvatarStack
+                        key={`${keyIndex}-avatar-stack`}
+                        sx={{
+                          verticalAlign: "middle",
+                          display: "inline-block",
+                        }}
+                      >
+                        {contributors &&
+                          contributors.map((contributor) => {
+                            return <Avatar key={`${keyIndex}-${contributor.avatar_url}-avatar`} src={contributor.avatar_url} />;
+                          })}
+                      </AvatarStack>
+                    </Text>
 
                     {/* Stars data */}
                     <Text
