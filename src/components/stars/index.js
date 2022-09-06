@@ -117,7 +117,11 @@ function Stars() {
               }
 
               return (
-                <Box className="table-row border-bottom" key={`${keyIndex}-repo-row-div`} borderColor={"fg.subtle"}>
+                <Box
+                  className="table-row border-bottom"
+                  key={`${keyIndex}-repo-row-div`}
+                  borderColor={"fg.subtle"}
+                >
                   {/* Repo Name */}
                   <Text
                     key={`${keyIndex}-repo-icon-text`}
@@ -206,35 +210,36 @@ function Stars() {
                     </Text>
 
                     {/* Contributors */}
-
                     {contributors && (
-                      <Text
-                        sx={{ marginRight: "12px" }}
-                        key={`${keyIndex}-repo-built-by`}
-                        fontSize={"12px"}
-                      >
-                        Built by
-                      </Text>
+                      <>
+                        <Text
+                          sx={{ marginRight: "12px" }}
+                          key={`${keyIndex}-repo-built-by`}
+                          fontSize={"12px"}
+                        >
+                          Built by
+                        </Text>
+                        <Text key={`${keyIndex}-avatar-stack-wrapper`}>
+                          <AvatarStack
+                            key={`${keyIndex}-avatar-stack`}
+                            sx={{
+                              verticalAlign: "middle",
+                              display: "inline-block",
+                            }}
+                          >
+                            {contributors &&
+                              contributors.map((contributor) => {
+                                return (
+                                  <Avatar
+                                    key={`${keyIndex}-${contributor.avatar_url}-avatar`}
+                                    src={`${contributor.avatar_url}&size=24`}
+                                  />
+                                );
+                              })}
+                          </AvatarStack>
+                        </Text>
+                      </>
                     )}
-                    <Text key={`${keyIndex}-avatar-stack-wrapper`}>
-                      <AvatarStack
-                        key={`${keyIndex}-avatar-stack`}
-                        sx={{
-                          verticalAlign: "middle",
-                          display: "inline-block",
-                        }}
-                      >
-                        {contributors &&
-                          contributors.map((contributor) => {
-                            return (
-                              <Avatar
-                                key={`${keyIndex}-${contributor.avatar_url}-avatar`}
-                                src={`${contributor.avatar_url}&size=24`}
-                              />
-                            );
-                          })}
-                      </AvatarStack>
-                    </Text>
 
                     {/* Stars data */}
                     <Text
