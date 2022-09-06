@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Link, Text, Box } from "@primer/react";
-import { RepoIcon, StarIcon } from "@primer/octicons-react";
+import { Link, Text, Box, Avatar } from "@primer/react";
+import { RepoIcon, StarIcon, RepoForkedIcon } from "@primer/octicons-react";
 import fetchStars from "../../services/fetchStars";
 import { ActionMenu, ActionList } from "@primer/react";
 import { CalendarIcon } from "@primer/octicons-react";
@@ -8,10 +8,30 @@ import "./index.css";
 import LanguageColor from "../language-color";
 
 const fieldTypes = [
-  { icon: CalendarIcon, name: "Last 24 hours", value: "last_24_hours" },
-  { icon: CalendarIcon, name: "Last 7 days", value: "last_7_days" },
-  { icon: CalendarIcon, name: "Last 30 days", value: "last_30_days" },
-  { icon: CalendarIcon, name: "All time", value: "all_time" },
+  {
+    icon: CalendarIcon,
+    name: "Last 24 hours",
+    value: "last_24_hours",
+    shortText: "today",
+  },
+  {
+    icon: CalendarIcon,
+    name: "Last 7 days",
+    value: "last_7_days",
+    shortText: "this week",
+  },
+  {
+    icon: CalendarIcon,
+    name: "Last 30 days",
+    value: "last_30_days",
+    shortText: "this month",
+  },
+  {
+    icon: CalendarIcon,
+    name: "All time",
+    value: "all_time",
+    shortText: "all time",
+  },
 ];
 
 function Stars() {
@@ -84,8 +104,16 @@ function Stars() {
                 langFmt = "Other";
               }
 
+              // if the contributors array exists and is not empty
+              var contributors = null;
+              if (star.contributors && star.contributors.length) {
+                contributors = star.contributors;
+              }
+
               return (
                 <Box className="table-row" key={`${keyIndex}-repo-row-div`}>
+
+                  {/* Repo Name */}
                   <Text
                     key={`${keyIndex}-repo-icon-text`}
                     sx={{
@@ -105,6 +133,8 @@ function Stars() {
                       {repoName}
                     </Text>
                   </Link>
+
+                  {/* Description */}
                   <Text
                     key={`${keyIndex}-repo-desc`}
                     sx={{
@@ -115,16 +145,61 @@ function Stars() {
                   >
                     {star.description}
                   </Text>
+
+                  {/* Repo details block */}
                   <Box key={`${keyIndex}-repo-info-div`}>
+
+                    {/* Language */}
                     <LanguageColor
                       key={`${keyIndex}-repo-lang-comp`}
                       keyIndex={`${keyIndex}-repo-lang-comp`}
                       lang={star.language}
                       repo_url={star.repo_url}
                     />
-                    <Text key={`${keyIndex}-repo-langfmt`} fontSize={"12px"}>
+                    <Text
+                      sx={{ marginRight: "26px" }}
+                      key={`${keyIndex}-repo-langfmt`}
+                      fontSize={"12px"}
+                    >
                       {langFmt}
                     </Text>
+
+                    {/* Stars Total */}
+                    <Text
+                      key={`${keyIndex}-repo-stars-count-wrapper-margin`}
+                      sx={{ marginRight: "4px" }}
+                    >
+                      <RepoForkedIcon
+                        key={`${keyIndex}-repo-stars-count-icon`}
+                        size={16}
+                      />
+                    </Text>
+
+                    {/* Forks */}
+                    <Text
+                      sx={{ marginRight: "26px" }}
+                      key={`${keyIndex}-repo-forks`}
+                      fontSize={"12px"}
+                    >
+                      {star.forks_count.toLocaleString()}
+                    </Text>
+
+                    {/* Contributors */}
+                    {contributors && (
+                      <Text
+                        sx={{ marginRight: "26px" }}
+                        key={`${keyIndex}-repo-langfmt`}
+                        fontSize={"12px"}
+                      >
+                        Built by
+                      </Text>
+                    )}
+                    {contributors &&
+                      contributors.map((contributor) => {
+                        return <Avatar src={contributor.avatar_url} />;
+                      })}
+
+                    {/* Stars data */}
                     <Text
                       key={`${keyIndex}-repo-stars-count-wrapper`}
                       sx={{ float: "right" }}
@@ -138,7 +213,8 @@ function Stars() {
                           size={16}
                         />
                       </Text>
-                      {star.stars} stars today
+                      {star.stars.toLocaleString()} stars{" "}
+                      {selectedType.shortText}
                     </Text>
                   </Box>
                 </Box>
