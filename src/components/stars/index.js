@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, Text, Box, Avatar } from "@primer/react";
+import { Link, Text, Box, Avatar, SubNav } from "@primer/react";
 import { RepoIcon, StarIcon, RepoForkedIcon } from "@primer/octicons-react";
 import fetchStars from "../../services/fetchStars";
 import { ActionMenu, ActionList } from "@primer/react";
@@ -65,7 +65,13 @@ function Stars() {
             borderColor={"fg.subtle"}
             className="container-lg-header"
           >
-            <Box></Box>
+            <Box>
+              <SubNav aria-label="Main">
+                <SubNav.Links>
+                  <SubNav.Link selected>Repositories</SubNav.Link>
+                </SubNav.Links>
+              </SubNav>
+            </Box>
             <Box className="table-header-options">
               <ActionMenu>
                 <ActionMenu.Button
@@ -112,7 +118,6 @@ function Stars() {
 
               return (
                 <Box className="table-row" key={`${keyIndex}-repo-row-div`}>
-
                   {/* Repo Name */}
                   <Text
                     key={`${keyIndex}-repo-icon-text`}
@@ -148,7 +153,6 @@ function Stars() {
 
                   {/* Repo details block */}
                   <Box key={`${keyIndex}-repo-info-div`}>
-
                     {/* Language */}
                     <LanguageColor
                       key={`${keyIndex}-repo-lang-comp`}
