@@ -110,6 +110,13 @@ function Stars() {
                 langFmt = "Other";
               }
 
+              // check if the item is the last item in the array
+              let isLastItem = stars.indexOf(star) === stars.length - 1;
+              var tableRowClass = "table-row";
+              if (!isLastItem) {
+                tableRowClass += " border-bottom";
+              }
+
               // if the contributors array exists and is not empty
               var contributors = null;
               if (star.contributors && star.contributors.length) {
@@ -118,7 +125,7 @@ function Stars() {
 
               return (
                 <Box
-                  className="table-row border-bottom"
+                  className={tableRowClass}
                   key={`${keyIndex}-repo-row-div`}
                   borderColor={"fg.subtle"}
                 >
