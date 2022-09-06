@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, Text, Box, Avatar, SubNav } from "@primer/react";
+import { Link, Text, Box, Avatar, SubNav, AvatarStack } from "@primer/react";
 import { RepoIcon, StarIcon, RepoForkedIcon } from "@primer/octicons-react";
 import fetchStars from "../../services/fetchStars";
 import { ActionMenu, ActionList } from "@primer/react";

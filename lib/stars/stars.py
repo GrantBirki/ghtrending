@@ -406,10 +406,10 @@ class StarEvents:
                     f"Error getting contributors enrichment data for {repo[0]} - HTTP: {contributors_resp.status_code}"
                 )
                 continue
-            contributors_resp = resp.json()
+            contributors_data = contributors_resp.json()
 
             # only grab the first 10 contributors
-            contributors = contributors_resp[:10]
+            contributors = contributors_data[:10]
 
             most_stared_enriched.append(
                 {
