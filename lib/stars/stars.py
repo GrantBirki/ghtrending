@@ -21,6 +21,7 @@ class StarEvents:
         """
         self.database_name = os.environ.get("DATABASE_NAME", "ghtrending")
         self.database_branch = os.environ.get("DATABASE_BRANCH", "main")
+        self.pscale_org = os.environ.get("PSCALE_ORG", "ghtrending")
         self.pscale_token = os.environ.get("PSCALE_TOKEN")
         self.pscale_id = os.environ.get("PSCALE_ID")
         self.dump_location = os.environ.get("DUMP_LOCATION", "db_dump")
@@ -153,7 +154,7 @@ class StarEvents:
                 os.system(f"rm -r {self.dump_location}")
 
         os.system(
-            f"pscale database dump --service-token-id {self.pscale_id} --service-token {self.pscale_token} {self.database_name} {self.database_branch} --output {self.dump_location}"
+            f"pscale database dump --service-token-id {self.pscale_id} --service-token {self.pscale_token} --org {self.pscale_org} {self.database_name} {self.database_branch} --output {self.dump_location}"
         )
 
     def clear_local_db(self):
