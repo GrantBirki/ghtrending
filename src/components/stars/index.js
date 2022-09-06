@@ -146,6 +146,7 @@ function Stars() {
                       marginTop: "3px",
                       marginBottom: "3px",
                     }}
+                    className="repo-desc"
                     as={"p"}
                   >
                     {star.description}
@@ -225,7 +226,12 @@ function Stars() {
                       >
                         {contributors &&
                           contributors.map((contributor) => {
-                            return <Avatar key={`${keyIndex}-${contributor.avatar_url}-avatar`} src={contributor.avatar_url} />;
+                            return (
+                              <Avatar
+                                key={`${keyIndex}-${contributor.avatar_url}-avatar`}
+                                src={contributor.avatar_url}
+                              />
+                            );
                           })}
                       </AvatarStack>
                     </Text>
