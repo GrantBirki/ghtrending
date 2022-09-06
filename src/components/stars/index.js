@@ -117,7 +117,7 @@ function Stars() {
               }
 
               return (
-                <Box className="table-row" key={`${keyIndex}-repo-row-div`}>
+                <Box className="table-row border-bottom" key={`${keyIndex}-repo-row-div`} borderColor={"fg.subtle"}>
                   {/* Repo Name */}
                   <Text
                     key={`${keyIndex}-repo-icon-text`}
