@@ -4,6 +4,7 @@ import {
   Text,
   useTheme,
   ToggleSwitch,
+  Flash,
 } from "@primer/react";
 import { useState } from "react";
 import { StarIcon } from "@primer/octicons-react";
@@ -49,6 +50,11 @@ function MainHeader() {
         <Header.Link href="https://github.com/GrantBirki/ghtrending">
           Code
         </Header.Link>
+      </Header.Item>
+      <Header.Item>
+        <Flash variant="warning">
+          👨‍🔬 data is still being back-filled for trending data older than 7 days
+        </Flash>
       </Header.Item>
       <Header.Item mr={0}>
         <ToggleSwitch
