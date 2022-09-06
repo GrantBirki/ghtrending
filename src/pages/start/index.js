@@ -1,4 +1,5 @@
 import { Box, Heading, Text } from "@primer/react";
+import MainFooter from "../../components/footer";
 import MainHeader from "../../components/header";
 import Stars from "../../components/stars";
 
@@ -23,6 +24,7 @@ function Start() {
         </Box>
       </Box>
       <Stars />
+      <MainFooter />
     </>
   );
 }
