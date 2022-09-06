@@ -18,11 +18,17 @@
   .repo-desc {
     max-width: 100%;
   }
+  .table-row {
+    padding-bottom: 2rem;
+  }
 }
 
 /* if tablet */
 @media (min-width: 768px) and (max-width: 1024px) {
   .repo-desc {
     max-width: 75%;
+  }
+  .table-row {
+    padding-bottom: 2rem;
   }
 }
