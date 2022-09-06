@@ -51,6 +51,10 @@ def main():
     # Get Star Event Trends
     star_events = StarEvents()
 
+    # clear the local db, dump the prod one, and load it in the local db
+    star_events.pscale_dump()
+    star_events.pscale_load()
+
     results = []
 
     # Get the most stared repos from all time from the DB

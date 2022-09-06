@@ -19,6 +19,11 @@ class StarEvents:
         """
         Initialize the StarEvents class
         """
+        self.database_name = os.environ.get("DATABASE_NAME", "ghtrending")
+        self.database_branch = os.environ.get("DATABASE_BRANCH", "main")
+        self.pscale_token = os.environ.get("PSCALE_TOKEN")
+        self.pscale_id = os.environ.get("PSCALE_ID")
+        self.dump_location = os.environ.get("DUMP_LOCATION", "db_dump")
         self.gh_token = os.environ.get("GH_TOKEN", None)
         self.prod = os.environ.get("ENV", False) == "production"
         self.log = self.log_config()
@@ -67,6 +72,7 @@ class StarEvents:
     def db_config(self):
         """
         Database connections and configuration
+        :param remove_local_first: Boolean to remove the local db file first
         :return: connection and cursor objects
         """
         if self.prod == True:
@@ -81,6 +87,9 @@ class StarEvents:
             )
             cursor = conn.cursor()
         else:
+            if os.environ.get("CLEAR_LOCAL_DB", False):
+                self.clear_local_db()
+
             self.log.info("Connecting to local database")
             # connect to the local sqlite database
             conn = sqlite3.connect("data/ghtrending.db")
@@ -132,6 +141,41 @@ class StarEvents:
         self.log.info(f"Collecting GitHub star events for {gharchive_timestamp}")
 
         return gharchive_timestamp
+
+    def pscale_dump(self, delete=False):
+        """
+        Use the pscale cli tool to dump the prod database (yuck)
+        """
+        # if the dump location exists, delete it
+        if delete:
+            if os.path.exists(self.dump_location):
+                self.log.info(f"Deleting {self.dump_location}")
+                os.system(f"rm -r {self.dump_location}")
+
+        os.system(
+            f"pscale database dump --service-token-id {self.pscale_id} --service-token {self.pscale_token} {self.database_name} {self.database_branch} --output {self.dump_location}"
+        )
+
+    def clear_local_db(self):
+        """
+        Delete the local sql db file if it exists
+        """
+        if os.path.exists("data/ghtrending.db"):
+            self.log.info("Deleting local db file")
+            os.system("rm data/ghtrending.db")
+
+    def pscale_load(self):
+        """
+        Load the local sql file into the local sqlite db
+        """
+        # load the file in the dump loaction that does not contain schema in the filename
+        for file in os.listdir(self.dump_location):
+            if "schema" not in file and ".sql" in file:
+                self.log.info(f"Loading {file}")
+                with open(f"{self.dump_location}/{file}", "r") as f:
+                    sql = f.read()
+
+        self.cursor.executescript(sql)
 
     def gharchive_download(self, timestamp):
         """

@@ -7,6 +7,7 @@ data/*.gz
 __pycache__
 script/populate
 .env
+db_dump
 
 # next.js
 
