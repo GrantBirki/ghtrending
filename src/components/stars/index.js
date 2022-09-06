@@ -229,7 +229,7 @@ function Stars() {
                             return (
                               <Avatar
                                 key={`${keyIndex}-${contributor.avatar_url}-avatar`}
-                                src={contributor.avatar_url}
+                                src={`${contributor.avatar_url}&size=24`}
                               />
                             );
                           })}
