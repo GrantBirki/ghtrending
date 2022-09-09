@@ -51,11 +51,6 @@ function MainHeader() {
           Code
         </Header.Link>
       </Header.Item>
-      <Header.Item>
-        <Flash variant="warning">
-          👨‍🔬 data is still being back-filled for trending data older than 7 days
-        </Flash>
-      </Header.Item>
       <Header.Item mr={0}>
         <ToggleSwitch
           defaultChecked={isOn}
