@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, Text, Box, Avatar, SubNav, AvatarStack } from "@primer/react";
+import { Link, Text, Box, Avatar, SubNav, AvatarStack, Token } from "@primer/react";
 import { RepoIcon, StarIcon, RepoForkedIcon } from "@primer/octicons-react";
 import fetchStars from "../../services/fetchStars";
 import { ActionMenu, ActionList } from "@primer/react";
@@ -246,11 +246,36 @@ function Stars() {
                         </Text>
                       </>
                     )}
+                    {/* Topics */}
+                    {star.topics && star.topics.length > 0 && (
+                      <Box
+                        key={`${keyIndex}-repo-topics-div`}
+                        sx={{
+                          marginTop: "12px",
+                        }}
+                      >
+                        {/* only get the free three topics */}
+                        {star.topics.slice(0, 3).map((topic) => {
+                          return (
+                            <Text key={`${keyIndex}-${topic}-text`}>
+                              <Token key={`${keyIndex}-${topic}-token`} text={topic} />{" "}
+                            </Text>
+                          );
+                        })}
+                      </Box>
+                    )}
+                    {star.topics.length === 0 && (
+                      <Box
+                        key={`${keyIndex}-repo-topics-div-empty`}
+                      >
+                      </Box>
+                    )}
 
                     {/* Stars data */}
                     <Text
                       key={`${keyIndex}-repo-stars-count-wrapper`}
                       sx={{ float: "right" }}
+                      marginTop={"-1rem"}
                     >
                       <Text
                         key={`${keyIndex}-repo-stars-count-wrapper-margin`}
