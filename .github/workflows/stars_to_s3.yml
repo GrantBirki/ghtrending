@@ -1,11 +1,11 @@
-name: stars
+name: stars_to_s3
 on:
   schedule:
-    - cron: "20 * * * *"
+    - cron: "45 */8 * * *"
   workflow_dispatch:
 
 jobs:
-  stars:
+  stars_to_s3:
     runs-on: ubuntu-latest
     environment: crons
 
@@ -19,11 +19,17 @@ jobs:
       - name: install dependencies
         run: pip install -r requirements.txt
 
-      - name: stars cron
-        run: python lib/crons/stars_cron.py
+      - name: sync to s3
+        run: |
+          wget https://github.com/planetscale/cli/releases/download/v0.115.0/pscale_0.115.0_linux_amd64.deb
+          sudo dpkg -i pscale_0.115.0_linux_amd64.deb
+          python lib/crons/star_trends_to_s3.py
         env:
-          ENV: production
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PSCALE_TOKEN: ${{ secrets.PSCALE_TOKEN }}
+          PSCALE_ID: ${{ secrets.PSCALE_ID }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           DB_HOST: ${{ secrets.DB_HOST }}
           DB_USERNAME: ${{ secrets.DB_USERNAME }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
