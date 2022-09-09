@@ -9,46 +9,6 @@ script/populate
 .env
 db_dump
 
-# next.js
+node_modules
 
-# dependencies
-/node_modules
-/.pnp
-.pnp.js
-
-# testing
-/coverage
-
-# cypress
-cypress/screenshots
-cypress/videos
-
-# next.js
-/.next
-/out
-
-# cache
-.swc/
-
-# production
-/build
-
-# misc
-.DS_Store
-*.pem
-Thumbs.db
-
-# debug
-npm-debug.log*
-pnpm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# dotenv local files
-.env*.local
-
-# local folder
-local
-
-# vercel
-.vercel
+src/data/version.json

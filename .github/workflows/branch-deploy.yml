@@ -50,6 +50,10 @@ jobs:
         if: ${{ steps.branch-deploy.outputs.continue == 'true' }}
         run: npm ci
 
+      - name: prebuild
+        if: ${{ steps.branch-deploy.outputs.continue == 'true' }}
+        run: npm run prebuild
+
       - name: build
         if: ${{ steps.branch-deploy.outputs.continue == 'true' }}
         run: npm run build
