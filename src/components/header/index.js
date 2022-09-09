@@ -4,7 +4,6 @@ import {
   Text,
   useTheme,
   ToggleSwitch,
-  Flash,
 } from "@primer/react";
 import { useState } from "react";
 import { StarIcon } from "@primer/octicons-react";
