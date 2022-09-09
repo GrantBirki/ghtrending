@@ -10,6 +10,7 @@ Find the latest trending repositories on GitHub!
 
 > Please note, this project is not affiliated with GitHub, Inc.
 
+
 ## About 💡
 
 On September 1st, 2022, GitHub [announced](https://github.com/community/community/discussions/31644#discussion-4354090) that it will be deprecating the `/trending` page. Many GitHub users (myself included) really enjoy the trending page. It is a great way to discover new repositories, projects, and developers.
