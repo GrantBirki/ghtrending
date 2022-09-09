@@ -1,5 +1,11 @@
-import { Box, Text, Link } from "@primer/react";
+import { Box, Text, Link, BranchName } from "@primer/react";
 import "./index.css";
+import version from "../../data/version.json";
+
+// Get version from version.json
+const { version: versionNumber } = version || { version: "unknown" };
+const baseVersionUrl = "https://github.com/GrantBirki/ghtrending/commit/";
+const shortVersion = versionNumber.substring(0, 7);
 
 function MainFooter() {
   return (
@@ -27,6 +33,10 @@ function MainFooter() {
               Source Code
             </Link>
           </Text>
+        </Box>
+
+        <Box padding={"5px"}>
+          <BranchName href={`${baseVersionUrl}${versionNumber}`}>{shortVersion}</BranchName>
         </Box>
 
         <Box>
