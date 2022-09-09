@@ -1,20 +1,24 @@
 import {
   Header,
-  StyledOcticon,
   Text,
   useTheme,
   ToggleSwitch,
-  Flash,
+  CircleBadge,
 } from "@primer/react";
 import { useState } from "react";
 import { StarIcon } from "@primer/octicons-react";
 
 function MainHeader() {
+  var iconFill = "";
   const { setColorMode, colorScheme } = useTheme();
 
   var checked = false;
   if (colorScheme === "light") {
     checked = true;
+    iconFill = "#24292f";
+  } else {
+    checked = false;
+    iconFill = "#cdd9e5";
   }
 
   const [isOn, setIsOn] = useState(checked);
@@ -39,7 +43,9 @@ function MainHeader() {
         }}
       >
         <Header.Link href="/">
-          <StyledOcticon icon={StarIcon} size={32} sx={{ mr: 2 }} />
+          <CircleBadge size={32} sx={{ mr: 2 }}>
+            <CircleBadge.Icon icon={StarIcon} sx={{ fill: iconFill }} />
+          </CircleBadge>
           <Text>GitHub Trending</Text>
         </Header.Link>
       </Header.Item>
@@ -50,11 +56,6 @@ function MainHeader() {
         <Header.Link href="https://github.com/GrantBirki/ghtrending">
           Code
         </Header.Link>
-      </Header.Item>
-      <Header.Item>
-        <Flash variant="warning">
-          👨‍🔬 data is still being back-filled for trending data older than 7 days
-        </Flash>
       </Header.Item>
       <Header.Item mr={0}>
         <ToggleSwitch

@@ -59,6 +59,10 @@
   border-bottom: 1px solid;
 }
 
+.border-color-muted {
+  border-color: rgba(110, 119, 129, 0.5) !important;
+}
+
 .main-header {
   padding-top: 2rem;
   padding-bottom: 2rem;

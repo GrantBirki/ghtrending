@@ -59,11 +59,10 @@ function Stars() {
   return (
     <>
       <Box bg="canvas.default" className="primary-box">
-        <Box className="container-lg" borderColor={"fg.subtle"}>
+        <Box className="container-lg border-color-muted">
           <Box
             bg="canvas.subtle"
-            borderColor={"fg.subtle"}
-            className="container-lg-header"
+            className="container-lg-header border-color-muted"
           >
             <Box>
               <SubNav aria-label="Main">
@@ -114,7 +113,7 @@ function Stars() {
               let isLastItem = stars.indexOf(star) === stars.length - 1;
               var tableRowClass = "table-row";
               if (!isLastItem) {
-                tableRowClass += " border-bottom";
+                tableRowClass += " border-bottom border-color-muted";
               }
 
               // if the contributors array exists and is not empty

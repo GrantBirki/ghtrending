@@ -1,4 +1,5 @@
-import { Box, Heading, Text } from "@primer/react";
+import { Box, Heading, Text, CircleBadge } from "@primer/react";
+import { StarIcon } from "@primer/octicons-react";
 import MainFooter from "../../components/footer";
 import MainHeader from "../../components/header";
 import Stars from "../../components/stars";
@@ -12,9 +13,11 @@ function Start() {
       <Box bg="canvas.default" className="center">
         <Box
           bg="canvas.subtle"
-          borderColor={"fg.subtle"}
-          className="border-bottom main-header"
+          className="border-bottom main-header border-color-muted"
         >
+          <CircleBadge variant="small" inline={true} sx={{mb: 15}}>
+            <CircleBadge.Icon icon={StarIcon} />
+          </CircleBadge>
           <Heading as={"h1"} sx={{ fontSize: 5 }}>
             Trending
           </Heading>
