@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, Text, Box, Avatar, SubNav, AvatarStack, Token } from "@primer/react";
-import { RepoIcon, StarIcon, RepoForkedIcon } from "@primer/octicons-react";
+import { RepoIcon, StarIcon, RepoForkedIcon, IssueOpenedIcon } from "@primer/octicons-react";
 import fetchStars from "../../services/fetchStars";
 import { ActionMenu, ActionList } from "@primer/react";
 import { CalendarIcon } from "@primer/octicons-react";
@@ -215,6 +215,24 @@ function Stars() {
                       {star.forks_count.toLocaleString()}
                     </Text>
 
+                    {/* open issues */}
+                    <Text
+                      key={`${keyIndex}-repo-open-issues-count-wrapper-margin`}
+                      sx={{ marginRight: "4px" }}
+                    >
+                      <IssueOpenedIcon
+                        key={`${keyIndex}-repo-open-issues-count-icon`}
+                        size={16}
+                      />
+                    </Text>
+                    <Text
+                      sx={{ marginRight: "26px" }}
+                      key={`${keyIndex}-repo-open-issues`}
+                      fontSize={"12px"}
+                    >
+                      {star.open_issues_count.toLocaleString()}
+                    </Text>
+
                     {/* Contributors */}
                     {contributors && (
                       <>
@@ -246,6 +264,7 @@ function Stars() {
                         </Text>
                       </>
                     )}
+
                     {/* Topics */}
                     {star.topics && star.topics.length > 0 && (
                       <Box
