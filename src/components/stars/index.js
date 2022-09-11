@@ -180,58 +180,79 @@ function Stars() {
                     </Text>
 
                     {/* Stargazers total */}
-                    <Text
-                      key={`${keyIndex}-repo-stargazers-total-wrapper-margin`}
-                      sx={{ marginRight: "4px" }}
+                    <Link
+                      muted={true}
+                      href={`${star.repo_url}/stargazers`}
+                      sx={{ color: "inherit" }}
+                      key={`${keyIndex}-repo-stars-total-link`}
                     >
-                      <StarIcon
-                        key={`${keyIndex}-repo-stargazers-total-icon`}
-                        size={16}
-                      />
-                    </Text>
-                    <Text
-                      sx={{ marginRight: "26px" }}
-                      key={`${keyIndex}-repo-stargazers-total`}
-                      fontSize={"12px"}
-                    >
-                      {star.stargazers_count.toLocaleString()}
-                    </Text>
+                      <Text
+                        key={`${keyIndex}-repo-stargazers-total-wrapper-margin`}
+                        sx={{ marginRight: "4px" }}
+                      >
+                        <StarIcon
+                          key={`${keyIndex}-repo-stargazers-total-icon`}
+                          size={16}
+                        />
+                      </Text>
+                      <Text
+                        sx={{ marginRight: "26px" }}
+                        key={`${keyIndex}-repo-stargazers-total`}
+                        fontSize={"12px"}
+                      >
+                        {star.stargazers_count.toLocaleString()}
+                      </Text>
+                    </Link>
 
                     {/* Forks */}
-                    <Text
-                      key={`${keyIndex}-repo-forks-count-wrapper-margin`}
-                      sx={{ marginRight: "4px" }}
+                    <Link
+                      muted={true}
+                      href={`${star.repo_url}/network/members`}
+                      sx={{ color: "inherit" }}
+                      key={`${keyIndex}-repo-forks-link`}
                     >
-                      <RepoForkedIcon
-                        key={`${keyIndex}-repo-forks-count-icon`}
-                        size={16}
-                      />
-                    </Text>
-                    <Text
-                      sx={{ marginRight: "26px" }}
-                      key={`${keyIndex}-repo-forks`}
-                      fontSize={"12px"}
-                    >
-                      {star.forks_count.toLocaleString()}
-                    </Text>
+                      <Text
+                        key={`${keyIndex}-repo-forks-count-wrapper-margin`}
+                        sx={{ marginRight: "4px" }}
+                      >
+                        <RepoForkedIcon
+                          key={`${keyIndex}-repo-forks-count-icon`}
+                          size={16}
+                        />
+                      </Text>
+                      <Text
+                        sx={{ marginRight: "26px" }}
+                        key={`${keyIndex}-repo-forks`}
+                        fontSize={"12px"}
+                      >
+                        {star.forks_count.toLocaleString()}
+                      </Text>
+                    </Link>
 
                     {/* open issues */}
-                    <Text
-                      key={`${keyIndex}-repo-open-issues-count-wrapper-margin`}
-                      sx={{ marginRight: "4px" }}
+                    <Link
+                      muted={true}
+                      href={`${star.repo_url}/issues`}
+                      sx={{ color: "inherit" }}
+                      key={`${keyIndex}-repo-open-issues-link`}
                     >
-                      <IssueOpenedIcon
-                        key={`${keyIndex}-repo-open-issues-count-icon`}
-                        size={16}
-                      />
-                    </Text>
-                    <Text
-                      sx={{ marginRight: "26px" }}
-                      key={`${keyIndex}-repo-open-issues`}
-                      fontSize={"12px"}
-                    >
-                      {star.open_issues_count.toLocaleString()}
-                    </Text>
+                      <Text
+                        key={`${keyIndex}-repo-open-issues-count-wrapper-margin`}
+                        sx={{ marginRight: "4px" }}
+                      >
+                        <IssueOpenedIcon
+                          key={`${keyIndex}-repo-open-issues-count-icon`}
+                          size={16}
+                        />
+                      </Text>
+                      <Text
+                        sx={{ marginRight: "26px" }}
+                        key={`${keyIndex}-repo-open-issues`}
+                        fontSize={"12px"}
+                      >
+                        {star.open_issues_count.toLocaleString()}
+                      </Text>
+                    </Link>
 
                     {/* Contributors */}
                     {contributors && (
@@ -294,7 +315,7 @@ function Stars() {
                     <Text
                       key={`${keyIndex}-repo-stars-count-wrapper`}
                       sx={{ float: "right" }}
-                      marginTop={"-1rem"}
+                      className="stars-data"
                     >
                       <Text
                         key={`${keyIndex}-repo-stars-count-wrapper-margin`}

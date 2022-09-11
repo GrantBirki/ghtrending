@@ -13,13 +13,20 @@
   max-width: 80%;
 }
 
+.stars-data {
+  margin-top: -1rem;
+}
+
 /* if mobile */
 @media (max-width: 768px) {
   .repo-desc {
     max-width: 100%;
   }
   .table-row {
-    padding-bottom: 2rem;
+    padding-bottom: 3rem;
+  }
+  .stars-data {
+    margin-top: 0.75rem;
   }
 }
 
