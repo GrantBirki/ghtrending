@@ -294,7 +294,7 @@ function Stars() {
                     <Text
                       key={`${keyIndex}-repo-stars-count-wrapper`}
                       sx={{ float: "right" }}
-                      marginTop={"-1rem"}
+                      className="stars-data"
                     >
                       <Text
                         key={`${keyIndex}-repo-stars-count-wrapper-margin`}
