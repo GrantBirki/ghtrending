@@ -77,7 +77,7 @@ class StarEvents:
         :return: connection and cursor objects
         """
         if self.prod == True:
-            self.log.info("Connecting to production database")
+            self.log.info("Connecting to production database (env set to production)")
             conn = MySQLdb.connect(
                 host=os.environ.get("DB_HOST", "localhost"),
                 user=os.environ.get("DB_USERNAME"),
@@ -91,7 +91,7 @@ class StarEvents:
             if os.environ.get("CLEAR_LOCAL_DB", False):
                 self.clear_local_db()
 
-            self.log.info("Connecting to local database")
+            self.log.info("Connecting to local database (env set to development)")
             # connect to the local sqlite database
             conn = sqlite3.connect("data/ghtrending.db")
             cursor = conn.cursor()
