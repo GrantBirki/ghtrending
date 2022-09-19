@@ -170,13 +170,17 @@ class StarEvents:
         Load the local sql file into the local sqlite db
         """
         # load the file in the dump loaction that does not contain schema in the filename
+        counter = 0
         for file in os.listdir(self.dump_location):
             if "schema" not in file and ".sql" in file:
                 self.log.info(f"Loading {file}")
                 with open(f"{self.dump_location}/{file}", "r") as f:
                     sql = f.read()
-
-        self.cursor.executescript(sql)
+                    self.cursor.executescript(sql)
+                    self.log.info(f"Loaded {file} in the sqlite db")
+                    counter += 1
+        
+        self.log.info(f"Loaded {counter} SQL files in the sqlite db")
 
     def gharchive_download(self, timestamp):
         """
