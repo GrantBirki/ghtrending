@@ -257,7 +257,7 @@ class StarEvents:
         failed_events = 0
 
         # prefetch recent events and compare them before attempting to insert
-        recent_events = self.get_recent_events()
+        recent_events = self.get_recent_events(limit=1) # basically disabling prefetch to reduce row reads on db
         recent_event_ids = [event[self.schema["id"]] for event in recent_events]
 
         fmt_events = []
