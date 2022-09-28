@@ -13,5 +13,5 @@ node_modules
 
 src/data/version.json
 
-!quest/data/.gitkeep
-quest/data/
+!database/data/.gitkeep
+database/data/

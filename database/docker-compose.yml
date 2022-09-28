@@ -5,7 +5,7 @@ services:
     container_name: questdb
     ports:
       # - 8812:8812
-      - 9009:9009
+      - 9000:9000
     volumes:
       - ./data:/root/.questdb/db
     environment:
