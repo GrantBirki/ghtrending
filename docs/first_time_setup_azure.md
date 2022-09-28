@@ -25,6 +25,12 @@ The very first time you go to build this application in production for Azure you
 5. Make sure to add both the basic auth values you set above as encrypted secrets in the cloudflare workers as well!
 6. Start your container stack `script/deploy`
 
+## Basic Auth Note
+
+The `BASIC_AUTH_PASS` value you export in Caddy is a hashed value resulting from the `caddy hash-password` command. You can run this command on your local machine and then copy the hashed value into the `~/.profile` file on the VM.
+
+The actual values you provide when using basic auth is a plaintext version of the `BASIC_AUTH_USER` variable and the original (plaintext) `BASIC_AUTH_PASS` variable
+
 ## TLS
 
 If you are using a domain name and have it configured as the DOMAIN env var, then Caddy will attempt to auto-provision a TLS certificate with Let's Encrypt.
