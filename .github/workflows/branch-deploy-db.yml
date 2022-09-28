@@ -38,4 +38,4 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script_stop: true
-          script: ~/ghtrending-db/script/deploy -r="${{ steps.branch-deploy.outputs.ref }}" -f="${{ steps.branch-deploy.outputs.fork_checkout }}" -d="ghtrending" -n="${{ steps.branch-deploy.outputs.fork_full_name }}"
+          script: ~/ghtrending/script/deploy -r="${{ steps.branch-deploy.outputs.ref }}" -f="${{ steps.branch-deploy.outputs.fork_checkout }}" -d="ghtrending" -n="${{ steps.branch-deploy.outputs.fork_full_name }}"
