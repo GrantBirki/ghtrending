@@ -6,6 +6,7 @@ services:
     ports:
       # - 8812:8812
       - 9000:9000
+      - 9009:9009
     volumes:
       - ./data:/root/.questdb/db
     environment:
