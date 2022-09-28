@@ -1,0 +1,12 @@
+services:
+  database:
+    restart: unless-stopped
+    image: questdb/questdb:6.5.3
+    container_name: questdb
+    ports:
+      # - 8812:8812
+      - 9009:9009
+    volumes:
+      - ./data:/root/.questdb/db
+    environment:
+      QDB_TELEMETRY_ENABLED: "false" # disable telemetry collecting
