@@ -18,7 +18,7 @@ jobs:
 
     steps:
 
-      - uses: github/branch-deploy@94be2ae82757df0a775975f3011c734be8c7db92 # pin@v2.4.1
+      - uses: github/branch-deploy@13475966d6676e2eb5825486fd7b8993bb2d6f7c # pin@v3.0.1
         id: branch-deploy
         with:
           admins: "GrantBirki"
