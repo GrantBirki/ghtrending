@@ -1,0 +1,17 @@
+{$DOMAIN} {
+	reverse_proxy {$PROXY_BACKEND}:{$PROXY_PORT} {
+		header_down Strict-Transport-Security max-age=31536000;
+	}
+
+	handle /caddy-health {
+		respond "OK"
+	}
+
+	basicauth * {
+		{$BASIC_AUTH_USER} {$BASIC_AUTH_PASS}
+	}
+
+	encode {
+		gzip 9
+	}
+}
