@@ -12,3 +12,6 @@ db_dump
 node_modules
 
 src/data/version.json
+
+!database/data/.gitkeep
+database/data/

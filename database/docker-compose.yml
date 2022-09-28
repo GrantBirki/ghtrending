@@ -1,0 +1,43 @@
+services:
+  database:
+    restart: unless-stopped
+    image: questdb/questdb:6.5.3
+    container_name: questdb
+    ports:
+      # - 8812:8812
+      - 9000:9000
+    volumes:
+      - ./data:/root/.questdb/db
+    environment:
+      QDB_TELEMETRY_ENABLED: "false"
+
+  caddy:
+    container_name: caddy
+    restart: unless-stopped
+    build:
+      context: ./caddy
+      dockerfile: ./Dockerfile
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./data/caddy_data:/data
+      - ./data/caddy_config:/config
+    depends_on:
+      - database
+    environment:
+      PROXY_BACKEND: database
+      PROXY_PORT: 9000
+      DOMAIN: ${DOMAIN}
+      BASIC_AUTH_USER: ${BASIC_AUTH_USER}
+      BASIC_AUTH_PASS: ${BASIC_AUTH_PASS}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/caddy-health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+volumes:
+  caddy_data:
+  caddy_config:
