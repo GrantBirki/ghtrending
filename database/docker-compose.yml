@@ -2,7 +2,7 @@ services:
   database:
     restart: unless-stopped
     image: questdb/questdb:6.5.3
-    container_name: questdb
+    container_name: database
     ports:
       # - 8812:8812
       - 9000:9000
