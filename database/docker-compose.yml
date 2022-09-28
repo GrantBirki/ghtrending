@@ -9,4 +9,4 @@ services:
     volumes:
       - ./data:/root/.questdb/db
     environment:
-      QDB_TELEMETRY_ENABLED: "false" # disable telemetry collecting
+      QDB_TELEMETRY_ENABLED: "false"
