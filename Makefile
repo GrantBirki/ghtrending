@@ -1,4 +1,4 @@
-db:
+run:
 	@echo "\033[0;34m[#] Killing old Docker processes\033[0m"
 	docker-compose -f database/docker-compose.yml down -v -t 1
 
