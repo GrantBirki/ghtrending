@@ -4,6 +4,7 @@ import json
 import logging
 import os
 import sys
+import time
 from datetime import datetime, timedelta
 
 import requests
@@ -81,8 +82,12 @@ class StarEvents:
             requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
 
         self.db_host = os.environ.get("DB_HOST", "localhost")
-        username = os.environ.get("BASIC_AUTH_USER", "dev")
-        password = os.environ.get("BASIC_AUTH_PASS", "dev")
+        username = os.environ.get(
+            "BASIC_AUTH_USERNAME", "dev"
+        )  # same as BASIC_AUTH_USER
+        password = os.environ.get(
+            "BASIC_AUTH_PASSWORD", "dev"
+        )  # same as BASIC_AUTH_PASS
         auth = base64.b64encode(f"{username}:{password}".encode("utf-8")).decode(
             "utf-8"
         )
@@ -203,6 +208,10 @@ class StarEvents:
         )
 
         if resp.status_code != 200:
+            if resp.status_code == 502:
+                self.log.warning(
+                    f"The query string may be too long on your request! Try reducing the number of events to write to the database"
+                )
             raise Exception(
                 f"database HTTP error: {resp.text} | status code: {resp.status_code}"
             )
@@ -234,20 +243,32 @@ class StarEvents:
 
         base_query = f"INSERT INTO {self.table_name} VALUES "
 
-        # split fmt_events into chunks of 1000
-        chunks = [fmt_events[x : x + 1000] for x in range(0, len(fmt_events), 1000)]
+        # split fmt_events into chunks of 750
+        chunks = [fmt_events[x : x + 750] for x in range(0, len(fmt_events), 750)]
 
         # loops throuh each chunk and send HTTP requests to write to the database
+        total_chunks = len(chunks)
+        counter = 1
         for chunk in chunks:
             try:
                 query = base_query + ",".join(
-                    [f"('{event[0]}', '{event[1]}', '{event[2]}')" for event in chunk]
+                    [f"('{event[0]}','{event[1]}','{event[2]}')" for event in chunk]
                 )
                 self.write_to_db(query)
+
+                # sleep to avoid overloading the database
+                if self.prod:
+                    time.sleep(10)
+                else:
+                    time.sleep(3)
+
+                self.log.info(f"wrote {counter}/{total_chunks} chunks to the database")
             except Exception as e:
-                self.log.error(f"Error writing to database: {e}")
+                self.log.error(f"Error writing to database (chunk: {counter}): {e}")
                 failed_events += len(chunk)
                 continue
+
+            counter += 1
 
         if skipped_events:
             self.log.info(f"Skipped {skipped_events} events")
