@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS
   stars(
     id string,
-    repo_name symbol CAPACITY 33554432,
+    repo_name string,
     created_at TIMESTAMP
   )
   TIMESTAMP(created_at)
