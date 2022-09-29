@@ -29,7 +29,7 @@ All data which is used to generate the trending data is from [gharchive](http://
 
 A GitHub Action cron runs once an hour to collect all data from the previous hour from gharchive and stores that data in a SQL database (PlanetScale free-tier).
 
-From here, the second phase of the Action workflow kicks off which aggregates all the events from the database in time slices (1 day, 1 week, 1 month, and all time). This data is then enriched with repository and contributor information from GitHub's API.
+From here, the second phase of the Action workflow kicks off which aggregates all the events from the database in time slices (1 day, 1 week, and 1 month). This data is then enriched with repository and contributor information from GitHub's API.
 
 Once we have enriched data, it is sent to an S3 bucket in JSON format and those files are served by Cloudflare's CDN all around the world
 
