@@ -1,6 +1,7 @@
 CREATE TABLE IF NOT EXISTS
-  stars(repo_name SYMBOL NOCACHE,
-  created_at TIMESTAMP)
+  stars(repo_name string,
+  created_at TIMESTAMP
+  )
   TIMESTAMP(created_at)
 PARTITION BY HOUR;
 
