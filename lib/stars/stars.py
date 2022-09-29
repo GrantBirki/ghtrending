@@ -196,9 +196,11 @@ class StarEvents:
 
         self.events = events
 
-    def write_to_db(self, query):
+    def db_query(self, query):
         """
-        Helper method for writing to the timeseries database
+        Helper method for querying the timeseries database (reads, writes, deletes, etc)
+        :param query: query to execute
+        :return: query results
         """
 
         resp = requests.get(
@@ -210,11 +212,29 @@ class StarEvents:
         if resp.status_code != 200:
             if resp.status_code == 502:
                 self.log.warning(
-                    f"The query string may be too long on your request! Try reducing the number of events to write to the database"
+                    f"The query string may be too long on your request! Try reducing the length of your query string"
                 )
             raise Exception(
                 f"database HTTP error: {resp.text} | status code: {resp.status_code}"
             )
+
+        return resp
+
+    def sanitize(self, field_name):
+        """
+        Helper function to sanitize the repo_name since the DB can be sensitive to special characters
+        :param repo_name: repo name to sanitize
+        :return: sanitized repo name (False if it can't be sanitized) - or the unsanitized repo name
+        """
+        if (
+            field_name == ""
+            or field_name == " "
+            or field_name == None
+            or field_name == False
+        ):
+            return False
+
+        return field_name.encode("utf-8").decode("utf-8")
 
     def write_star_events(self):
         """
@@ -226,13 +246,24 @@ class StarEvents:
 
         fmt_events = []
         for event in self.events:
+
+            repo_name = self.sanitize(event["repo_name"])
+            if not repo_name:
+                skipped_events += 1
+                continue
+
+            event_id = self.sanitize(event["id"])
+            if not event_id:
+                skipped_events += 1
+                continue
+
             fmt_events.append(
                 (
-                    event["id"],
+                    event_id,
                     # event["actor_id"],
                     # event["actor_login"],
                     # event["repo_id"],
-                    event["repo_name"],
+                    repo_name,
                     event["created_at"],
                 )
             )
@@ -250,11 +281,12 @@ class StarEvents:
         total_chunks = len(chunks)
         counter = 1
         for chunk in chunks:
+
             try:
                 query = base_query + ",".join(
                     [f"('{event[0]}','{event[1]}','{event[2]}')" for event in chunk]
                 )
-                self.write_to_db(query)
+                self.db_query(query)
 
                 # sleep to avoid overloading the database
                 if self.prod:
@@ -271,7 +303,9 @@ class StarEvents:
             counter += 1
 
         if skipped_events:
-            self.log.info(f"Skipped {skipped_events} events")
+            self.log.info(
+                f"Skipped {skipped_events} events (due to empty 'repo_name' or 'id' value from gharchive)"
+            )
 
         if failed_events:
             self.log.info(f"Failed to commit {failed_events} events")
@@ -281,50 +315,52 @@ class StarEvents:
             f"Committed {len(self.events) - skipped_events - failed_events} changes to the database"
         )
 
-    def get_most_stared(self, limit=20, hours=None, enrich=True):
+    def get_stars_in_timeslice(self, limit=20, hours=None, enrich=True, dedupe=False):
         """
         Query the database for the most stared repositories in a given time period
         :param limit: number of results to return
         :param hours: a time period to limit the results to
         :param enrich: enrich the results with the GitHub API
+        :param dedupe: remove duplicate results
         :return: list of most stared repositories
         """
-        # Query the database to find the most stared repos during the given time period
-        if not hours:
-            if self.prod == True:
-                # planetscale query format
-                query = "SELECT repo_name, COUNT(*) AS count FROM stars GROUP BY repo_name ORDER BY count DESC LIMIT %s"
-            else:
-                # sqlite query format
-                query = "SELECT repo_name, COUNT(*) AS count FROM stars GROUP BY repo_name ORDER BY count DESC LIMIT ?"
+        start = time.time()
+        # Query the database to find the repos with stars during the given time period
+        query = f"SELECT id, repo_name FROM 'stars' WHERE created_at > dateadd('h', -{hours}, now()) GROUP BY repo_name ORDER BY repo_name"
 
-            # if there is no hours value, get the most stared repos for all time
-            self.cursor.execute(
-                query,
-                (limit,),
-            )
-        else:
-            # if there is a hours value, get the most stared repos for the given time period
-            if self.prod == True:
-                # planetscale query format
-                query = "SELECT repo_name, COUNT(*) AS count FROM stars WHERE created_at between %s and %s GROUP BY repo_name ORDER BY count DESC LIMIT %s"
-            else:
-                # sqlite query format
-                query = "SELECT repo_name, COUNT(*) AS count FROM stars WHERE(strftime('%Y-%m%dT%H:%M:%S', created_at) between strftime('%Y-%m%dT%H:%M:%S', ?) and strftime('%Y-%m%dT%H:%M:%S', ?)) GROUP BY repo_name ORDER BY count DESC LIMIT ?"
+        resp = self.db_query(query)
+        data = resp.json()["dataset"]
 
-            end = datetime.utcnow()
-            start = end - timedelta(hours=hours)
-            self.cursor.execute(
-                query,
-                (
-                    start.strftime("%Y-%m-%dT%H:%M:%S"),
-                    end.strftime("%Y-%m-%dT%H:%M:%S"),
-                    limit,
-                ),
-            )
+        with open("data.json", "w") as f:
+            f.write(json.dumps(data))
+
+        # dedupe the results by looking for duplicate "id" values where id is a string
+        if dedupe:
+            seen = set()
+            # iterate over all the events and select index [0] (the id) and add it to the set
+            data = [x for x in data if not (x[0] in seen or seen.add(x[0]))]
+            self.log.info(f"Removed {len(data) - len(seen)} duplicate results")
+
+        self.log.info(f"Found {len(data)} results to process")
+
+        # loop through every result and count the total number of occurances for each repo (index 1 - string)
+        # this is done by creating a dictionary where the key is the repo name and the value is the number of occurances
+        # the dictionary is then sorted by the number of occurances and returned
+        results = {}
+        for result in data:
+            if result[1] in results:
+                results[result[1]] += 1
+            else:
+                results[result[1]] = 1
+        results = sorted(results.items(), key=lambda x: x[1], reverse=True)
+        results = results[:limit]
 
         # update the object with the results
-        self.most_stared = self.cursor.fetchall()
+        self.most_stared = results
+
+        self.log.info(
+            f"Processed {len(data)} results in {round(time.time() - start, 3)} seconds"
+        )
 
         if enrich:
             self.most_stared = self.enrich_most_stared()
@@ -338,6 +374,8 @@ class StarEvents:
         :return: list of most stared repositories with additional information
         Note: This function will also update the self.most_stared object with the enriched data
         """
+        self.log.info("Enriching repository data with the GitHub API")
+        start = time.time()
         most_stared_enriched = []
 
         # loop through all the most stared repos and get the additional information
@@ -387,6 +425,10 @@ class StarEvents:
                     "contributors": contributors,
                 }
             )
+
+        self.log.info(
+            f"Enriched {len(most_stared_enriched)} repositories in {round(time.time() - start, 3)} seconds"
+        )
 
         self.most_stared = most_stared_enriched
         return self.most_stared
