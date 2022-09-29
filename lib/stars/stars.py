@@ -1,12 +1,11 @@
+import base64
 import gzip
 import json
 import logging
 import os
-import sqlite3
 import sys
 from datetime import datetime, timedelta
 
-import MySQLdb
 import requests
 
 
@@ -19,16 +18,12 @@ class StarEvents:
         """
         Initialize the StarEvents class
         """
-        self.database_name = os.environ.get("DATABASE_NAME", "ghtrending")
-        self.database_branch = os.environ.get("DATABASE_BRANCH", "main")
-        self.pscale_org = os.environ.get("PSCALE_ORG", "ghtrending")
-        self.pscale_token = os.environ.get("PSCALE_TOKEN")
-        self.pscale_id = os.environ.get("PSCALE_ID")
-        self.dump_location = os.environ.get("DUMP_LOCATION", "db_dump")
         self.gh_token = os.environ.get("GH_TOKEN", None)
+        self.table_name = os.environ.get("TABLE_NAME", "stars")
+        self.db_headers = {}
         self.prod = os.environ.get("ENV", False) == "production"
         self.log = self.log_config()
-        self.conn, self.cursor = self.db_config()
+        self.db_config()
         self.base_url = "https://data.gharchive.org"
         self.gh_base_url = "https://api.github.com"
         self.hours = 2
@@ -73,46 +68,33 @@ class StarEvents:
     def db_config(self):
         """
         Database connections and configuration
-        :param remove_local_first: Boolean to remove the local db file first
         :return: connection and cursor objects
         """
         if self.prod == True:
             self.log.info("Connecting to production database (env set to production)")
-            conn = MySQLdb.connect(
-                host=os.environ.get("DB_HOST", "localhost"),
-                user=os.environ.get("DB_USERNAME"),
-                passwd=os.environ.get("DB_PASSWORD"),
-                db=os.environ.get("DATABASE_NAME"),
-                ssl_mode="VERIFY_IDENTITY",
-                ssl={"ca": "/etc/ssl/certs/ca-certificates.crt"},
-            )
-            cursor = conn.cursor()
         else:
-            if os.environ.get("CLEAR_LOCAL_DB", False):
-                self.clear_local_db()
+            self.log.info("Connecting to development database (env set to development)")
 
-            self.log.info("Connecting to local database (env set to development)")
-            # connect to the local sqlite database
-            conn = sqlite3.connect("data/ghtrending.db")
-            cursor = conn.cursor()
-            # read sql create table statement
-            with open(os.environ.get("STARS_TABLE_SQL", "data/stars.sql"), "r") as f:
-                create_star_table = f.read()
-            cursor.execute(create_star_table)
+            # suppress requests SSL warnings to localhost
+            from urllib3.exceptions import InsecureRequestWarning
 
-        return conn, cursor
+            requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
+
+        self.db_host = os.environ.get("DB_HOST", "localhost")
+        username = os.environ.get("BASIC_AUTH_USER", "dev")
+        password = os.environ.get("BASIC_AUTH_PASS", "dev")
+        auth = base64.b64encode(f"{username}:{password}".encode("utf-8")).decode(
+            "utf-8"
+        )
+        self.db_headers = {
+            "Authorization": f"Basic {auth}",
+        }
 
     def clear_events(self):
         """
         Clears all events from the events list
         """
         self.events = []
-
-    def close(self):
-        """
-        Close the database connection
-        """
-        self.conn.close()
 
     def gharchive_timestamp_fmt(self, timestamp):
         """
@@ -142,45 +124,6 @@ class StarEvents:
         self.log.info(f"Collecting GitHub star events for {gharchive_timestamp}")
 
         return gharchive_timestamp
-
-    def pscale_dump(self, delete=False):
-        """
-        Use the pscale cli tool to dump the prod database (yuck)
-        """
-        # if the dump location exists, delete it
-        if delete:
-            if os.path.exists(self.dump_location):
-                self.log.info(f"Deleting {self.dump_location}")
-                os.system(f"rm -r {self.dump_location}")
-
-        os.system(
-            f"pscale database dump --service-token-id {self.pscale_id} --service-token {self.pscale_token} --org {self.pscale_org} {self.database_name} {self.database_branch} --output {self.dump_location}"
-        )
-
-    def clear_local_db(self):
-        """
-        Delete the local sql db file if it exists
-        """
-        if os.path.exists("data/ghtrending.db"):
-            self.log.info("Deleting local db file")
-            os.system("rm data/ghtrending.db")
-
-    def pscale_load(self):
-        """
-        Load the local sql file into the local sqlite db
-        """
-        # load the file in the dump loaction that does not contain schema in the filename
-        counter = 0
-        for file in os.listdir(self.dump_location):
-            if "schema" not in file and ".sql" in file:
-                self.log.info(f"Loading {file}")
-                with open(f"{self.dump_location}/{file}", "r") as f:
-                    sql = f.read()
-                    self.cursor.executescript(sql)
-                    self.log.info(f"Loaded {file} in the sqlite db")
-                    counter += 1
-        
-        self.log.info(f"Loaded {counter} SQL files in the sqlite db")
 
     def gharchive_download(self, timestamp):
         """
@@ -248,6 +191,22 @@ class StarEvents:
 
         self.events = events
 
+    def write_to_db(self, query):
+        """
+        Helper method for writing to the timeseries database
+        """
+
+        resp = requests.get(
+            f"https://{self.db_host}/exec?query={query}",
+            headers=self.db_headers,
+            verify=self.prod,  # don't use SSL verification if in development
+        )
+
+        if resp.status_code != 200:
+            raise Exception(
+                f"database HTTP error: {resp.text} | status code: {resp.status_code}"
+            )
+
     def write_star_events(self):
         """
         Helper function to use the values in self.events to write to the database
@@ -256,120 +215,50 @@ class StarEvents:
         skipped_events = 0
         failed_events = 0
 
-        # prefetch recent events and compare them before attempting to insert
-        recent_events = self.get_recent_events(limit=1) # basically disabling prefetch to reduce row reads on db
-        recent_event_ids = [event[self.schema["id"]] for event in recent_events]
-
         fmt_events = []
         for event in self.events:
-
-            # if the event is already in the database, skip it
-            if event["id"] in recent_event_ids:
-                skipped_events += 1
-                continue
-
             fmt_events.append(
                 (
                     event["id"],
-                    event["actor_id"],
-                    event["actor_login"],
-                    event["repo_id"],
+                    # event["actor_id"],
+                    # event["actor_login"],
+                    # event["repo_id"],
                     event["repo_name"],
                     event["created_at"],
                 )
             )
 
         if len(fmt_events) == 0:
-            self.log.info(
-                "No new events to write to the database that are not duplicates"
-            )
+            self.log.info("No new events to write to the database")
             return
 
-        if self.prod == True:
-            # planetscale query format
-            query = "INSERT INTO stars VALUES (%s, %s, %s, %s, %s, %s)"
-        else:
-            # sqlite query format
-            query = "INSERT INTO stars VALUES (?, ?, ?, ?, ?, ?)"
+        base_query = f"INSERT INTO {self.table_name} VALUES "
 
-        try:
-            self.cursor.executemany(
-                query,
-                fmt_events,
-            )
-            self.conn.commit()
-        except (MySQLdb.IntegrityError, sqlite3.IntegrityError):
-            self.log.warn(
-                "Bulk insert failed (likely due to a duplicate), trying one by one inserts instead"
-            )
+        # split fmt_events into chunks of 1000
+        chunks = [fmt_events[x : x + 1000] for x in range(0, len(fmt_events), 1000)]
 
-            # we have to retry so we reset the counters
-            skipped_events = 0
-            failed_events = 0
-
-            # loop through all events and commit them to the database
-            for event in self.events:
-                try:
-
-                    # if the event is already in the database, skip it
-                    if event["id"] in recent_event_ids:
-                        skipped_events += 1
-                        continue
-
-                    self.cursor.execute(
-                        query,
-                        (
-                            event["id"],
-                            event["actor_id"],
-                            event["actor_login"],
-                            event["repo_id"],
-                            event["repo_name"],
-                            event["created_at"],
-                        ),
-                    )
-                except (MySQLdb.IntegrityError, sqlite3.IntegrityError):
-                    self.log.debug(
-                        f"Event {event['id']} already exists in the database"
-                    )
-                    skipped_events += 1
-                    continue
-
-                except Exception as e:
-                    self.log.error(f"Error inserting event {event['id']} - {e}")
-                    failed_events += 1
-                    continue
+        # loops throuh each chunk and send HTTP requests to write to the database
+        for chunk in chunks:
+            try:
+                query = base_query + ",".join(
+                    [f"('{event[0]}', '{event[1]}', '{event[2]}')" for event in chunk]
+                )
+                self.write_to_db(query)
+            except Exception as e:
+                self.log.error(f"Error writing to database: {e}")
+                failed_events += len(chunk)
+                continue
 
         if skipped_events:
-            self.log.info(
-                f"Skipped {skipped_events} duplicate events (already in the DB)"
-            )
+            self.log.info(f"Skipped {skipped_events} events")
 
         if failed_events:
             self.log.info(f"Failed to commit {failed_events} events")
 
-        self.conn.commit()
-
         # get the number of changes
         self.log.info(
-            f"Committed {len(self.events) - skipped_events} changes to the database"
+            f"Committed {len(self.events) - skipped_events - failed_events} changes to the database"
         )
-
-    def get_recent_events(self, limit=10000, hours=None):
-        """
-        Query the database to get the most recent events that have been created
-        :return: List of events
-        """
-        if hours:
-            timestamp = datetime.utcnow() - timedelta(hours=hours)
-        else:
-            timestamp = datetime.utcnow() - timedelta(hours=self.hours)
-
-        query = f"SELECT * FROM stars WHERE created_at > '{timestamp}' ORDER BY created_at DESC LIMIT {limit}"
-
-        self.cursor.execute(query)
-        events = self.cursor.fetchall()
-
-        return events
 
     def get_most_stared(self, limit=20, hours=None, enrich=True):
         """
@@ -488,4 +377,3 @@ class StarEvents:
         """
         self.get_star_events()
         self.write_star_events()
-        self.close()
