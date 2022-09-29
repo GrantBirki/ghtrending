@@ -1,7 +1,7 @@
 name: stars_to_s3
 on:
-  # schedule:
-  #   - cron: "45 */8 * * *"
+  schedule:
+    - cron: "45 */8 * * *"
   workflow_dispatch:
 
 jobs:
