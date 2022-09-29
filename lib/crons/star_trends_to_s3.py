@@ -71,8 +71,6 @@ def main():
         {"name": "last_30_days", "data": star_events.get_most_stared(hours=24 * 30)}
     )
 
-    star_events.close()
-
     # Upload to S3
     print("Uploading to S3...")
     for result in results:
