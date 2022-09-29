@@ -54,29 +54,35 @@ def main():
     results = []
 
     # Get the most stared repos from the past 24 hours
-    print("Getting most stared repos from the past 24 hours")
+    print("\nGetting most stared repos from the past 24 hours")
     results.append(
-        {"name": "last_24_hours", "data": star_events.get_most_stared(hours=24)}
+        {"name": "last_24_hours", "data": star_events.get_stars_in_timeslice(hours=24)}
     )
 
     # Get the most stared repos from the past 7 days
-    print("Getting most stared repos from the past 7 days")
+    print("\nGetting most stared repos from the past 7 days")
     results.append(
-        {"name": "last_7_days", "data": star_events.get_most_stared(hours=24 * 7)}
+        {
+            "name": "last_7_days",
+            "data": star_events.get_stars_in_timeslice(hours=24 * 7),
+        }
     )
 
     # Get the most stared repos from the past 30 days
-    print("Getting most stared repos from the past 30 days")
+    print("\nGetting most stared repos from the past 30 days")
     results.append(
-        {"name": "last_30_days", "data": star_events.get_most_stared(hours=24 * 30)}
+        {
+            "name": "last_30_days",
+            "data": star_events.get_stars_in_timeslice(hours=24 * 30),
+        }
     )
 
     # Upload to S3
-    print("Uploading to S3...")
+    print("\nUploading to S3...")
     for result in results:
         upload_to_s3(result)
 
-    print("Done!")
+    print("\nDone!")
 
 
 if __name__ == "__main__":
