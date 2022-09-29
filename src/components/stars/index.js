@@ -26,12 +26,6 @@ const fieldTypes = [
     value: "last_30_days",
     shortText: "this month",
   },
-  {
-    icon: CalendarIcon,
-    name: "All time",
-    value: "all_time",
-    shortText: "all time",
-  },
 ];
 
 function Stars() {
