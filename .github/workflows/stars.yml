@@ -24,5 +24,5 @@ jobs:
         env:
           ENV: production
           DB_HOST: ${{ secrets.DB_HOST }}
-          BASIC_AUTH_USER: ${{ secrets.BASIC_AUTH_USER }}
-          BASIC_AUTH_PASS: ${{ secrets.BASIC_AUTH_PASS }}
+          BASIC_AUTH_USERNAME: ${{ secrets.BASIC_AUTH_USER }}
+          BASIC_AUTH_PASSWORD: ${{ secrets.BASIC_AUTH_PASS }}
