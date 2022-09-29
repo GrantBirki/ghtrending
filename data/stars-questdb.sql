@@ -1,6 +1,8 @@
 CREATE TABLE IF NOT EXISTS
-  stars(repo_name string,
-  created_at TIMESTAMP
+  stars(
+    id string,
+    repo_name string,
+    created_at TIMESTAMP
   )
   TIMESTAMP(created_at)
 PARTITION BY HOUR;

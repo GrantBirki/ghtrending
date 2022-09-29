@@ -219,7 +219,7 @@ class StarEvents:
         for event in self.events:
             fmt_events.append(
                 (
-                    # event["id"],
+                    event["id"],
                     # event["actor_id"],
                     # event["actor_login"],
                     # event["repo_id"],
@@ -234,16 +234,14 @@ class StarEvents:
 
         base_query = f"INSERT INTO {self.table_name} VALUES "
 
-        # ('EFForg/privacybadger', '2022-09-04 01:00:01'),('Mereithhh/van-blog', '2022-09-04 01:00:01'),('openai/baselines', '2022-09-04 01:00:02')
-
         # split fmt_events into chunks of 1000
         chunks = [fmt_events[x : x + 1000] for x in range(0, len(fmt_events), 1000)]
 
-        # loops throuh each chunk and sent HTTP requests to write to the database
+        # loops throuh each chunk and send HTTP requests to write to the database
         for chunk in chunks:
             try:
                 query = base_query + ",".join(
-                    [f"('{event[0]}', '{event[1]}')" for event in chunk]
+                    [f"('{event[0]}', '{event[1]}', '{event[2]}')" for event in chunk]
                 )
                 self.write_to_db(query)
             except Exception as e:
