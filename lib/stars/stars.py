@@ -78,13 +78,12 @@ class StarEvents:
         table_service_client = TableServiceClient.from_connection_string(
             conn_str=connection_string
         )
-
-        self.log.info(f"created table service client for {self.storage_account_name}")
+        self.log.debug(f"Created table service client for {self.storage_account_name}")
 
         # set the table class variable to the Azure table client
         self.table = table_service_client.get_table_client(table_name=self.table_name)
 
-        self.log.info(f"created client to Azure Table Storage: {self.table_name}")
+        self.log.info(f"Created client to connect to storage table: {self.table_name}")
 
     def write(self, entities):
         """
@@ -216,30 +215,6 @@ class StarEvents:
 
         self.events = events
 
-    def db_query(self, query):
-        """
-        Helper method for querying the timeseries database (reads, writes, deletes, etc)
-        :param query: query to execute
-        :return: query results
-        """
-
-        resp = requests.get(
-            f"https://{self.db_host}/exec?query={query}",
-            headers=self.db_headers,
-            verify=self.prod,  # don't use SSL verification if in development
-        )
-
-        if resp.status_code != 200:
-            if resp.status_code == 502:
-                self.log.warning(
-                    f"The query string may be too long on your request! Try reducing the length of your query string"
-                )
-            raise Exception(
-                f"database HTTP error: {resp.text} | status code: {resp.status_code}"
-            )
-
-        return resp
-
     def sanitize(self, field_name):
         """
         Helper function to sanitize the repo_name since the DB can be sensitive to special characters
@@ -262,77 +237,76 @@ class StarEvents:
         Loops through all events and commits them to the database
         """
         skipped_events = 0
-        failed_events = 0
 
         fmt_events = []
         for event in self.events:
 
+            # sanitize the repo_name
             repo_name = self.sanitize(event["repo_name"])
             if not repo_name:
                 skipped_events += 1
                 continue
 
+            # sanitize the id (star event_id)
             event_id = self.sanitize(event["id"])
             if not event_id:
                 skipped_events += 1
                 continue
 
+            # append the formatted event to the list
             fmt_events.append(
-                (
-                    event_id,
+                {
+                    "PartitionKey": "stars",
+                    "RowKey": event_id,
+                    "repo_name": repo_name,
+                    "created_at": event["created_at"],
                     # event["actor_id"],
                     # event["actor_login"],
                     # event["repo_id"],
-                    repo_name,
-                    event["created_at"],
-                )
+                }
             )
 
+        # if there are no new events, exit
         if len(fmt_events) == 0:
             self.log.info("No new events to write to the database")
             return
 
-        base_query = f"INSERT INTO {self.table_name} VALUES "
-
-        # split fmt_events into chunks of 750
-        chunks = [fmt_events[x : x + 750] for x in range(0, len(fmt_events), 750)]
-
-        # loops throuh each chunk and send HTTP requests to write to the database
+        # split the fmt_events list into chunks of 100 (max batch size)
+        chunks = [fmt_events[x : x + 100] for x in range(0, len(fmt_events), 100)]
         total_chunks = len(chunks)
+
+        self.log.info(f"Attempting to write {total_chunks} chunks containing {len(fmt_events)} events to the database")
+
         counter = 1
         for chunk in chunks:
+            start = time.time()
+            result = self.write(chunk)
+            end = time.time()
 
-            try:
-                query = base_query + ",".join(
-                    [f"('{event[0]}','{event[1]}','{event[2]}')" for event in chunk]
+            if result:
+                self.log.info(
+                    f"Chunk {counter}/{total_chunks} written successfully in {round(end - start, 2)} seconds"
                 )
-                self.db_query(query)
-
-                # sleep to avoid overloading the database
-                if self.prod:
-                    time.sleep(10)
-                else:
-                    time.sleep(3)
-
-                self.log.info(f"wrote {counter}/{total_chunks} chunks to the database")
-            except Exception as e:
-                self.log.error(f"Error writing to database (chunk: {counter}): {e}")
-                failed_events += len(chunk)
-                continue
+            elif result is False:
+                # if the chunk failed to write, do additional logging/processing
+                self.log.warning(
+                    f"Chunk {counter}/{total_chunks} failed to write - retrying..."
+                )
+                result = self.write(chunk)
+                if result is False:
+                    self.log.error(
+                        f"Chunk {counter}/{total_chunks} failed to write on retry - skipping..."
+                    )
 
             counter += 1
 
-        if skipped_events:
-            self.log.info(
-                f"Skipped {skipped_events} events (due to empty 'repo_name' or 'id' value from gharchive)"
-            )
-
-        if failed_events:
-            self.log.info(f"Failed to commit {failed_events} events")
+        # log the number of events skipped
+        if skipped_events > 0:
+            self.log.info(f"Skipped {skipped_events} events")
 
         # get the number of changes
         self.log.info(
-            f"Committed {len(self.events) - skipped_events - failed_events} changes to the database"
+            f"Committed {len(self.events) - skipped_events} changes to the database"
         )
 
     def get_stars_in_timeslice(self, limit=20, hours=None, enrich=True, dedupe=False):
