@@ -1,4 +1,3 @@
-import base64
 import gzip
 import json
 import logging
@@ -8,8 +7,8 @@ import time
 from datetime import datetime, timedelta
 
 import requests
-from azure.core.credentials import AzureNamedKeyCredential
 from azure.data.tables import TableServiceClient
+from azure.core.exceptions import ResourceExistsError
 
 
 class StarEvents:
@@ -75,16 +74,40 @@ class StarEvents:
         Database connections and configuration
         Currently using Azure Table Storage
         """
-        credential = AzureNamedKeyCredential(
-            self.storage_account_name, self.azure_access_key
+        connection_string = f"DefaultEndpointsProtocol=https;AccountName={self.storage_account_name};AccountKey={self.azure_access_key};EndpointSuffix=core.windows.net"
+        table_service_client = TableServiceClient.from_connection_string(
+            conn_str=connection_string
         )
-        table_service_client = TableServiceClient(
-            endpoint=f"https://{self.storage_account_name}.table.core.windows.net/{self.table_name}",
-            credential=credential,
-        )
+
+        self.log.info(f"created table service client for {self.storage_account_name}")
 
         # set the table class variable to the Azure table client
         self.table = table_service_client.get_table_client(table_name=self.table_name)
+
+        self.log.info(f"created client to Azure Table Storage: {self.table_name}")
+
+    def write(self, entity):
+        """
+        Write an entity to the Azure Table Storage
+        :param entity: entity to write to the Azure Table Storage
+        :return: created entity object if successful, None if the entity already exists, False if there is an error
+        """
+        try:
+            return self.table.create_entity(entity=entity)
+        except ResourceExistsError:
+            self.log.warning(f"Skipping RowKey: {entity['RowKey']} - already exists")
+            return None
+        except Exception as e:
+            self.log.error(f"Error writing entity to Azure Table Storage: {e}")
+            return False
+
+    def read(self, query):
+        """
+        Execute a query against the Azure Table Storage
+        :param query: query to execute
+        :return: results from the query
+        """
+        return self.table.query_entities(query)
 
     def clear_events(self):
         """

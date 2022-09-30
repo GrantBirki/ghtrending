@@ -15,3 +15,5 @@ src/data/version.json
 
 !database/data/.gitkeep
 database/data/
+
+venv
