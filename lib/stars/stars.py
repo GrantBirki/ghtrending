@@ -86,14 +86,20 @@ class StarEvents:
 
         self.log.info(f"created client to Azure Table Storage: {self.table_name}")
 
-    def write(self, entity):
+    def write(self, entities):
         """
-        Write an entity to the Azure Table Storage
-        :param entity: entity to write to the Azure Table Storage
+        Write a batch of entities to the Azure Table Storage
+        :param entities: entities to write to the Azure Table Storage (list)
         :return: created entity object if successful, None if the entity already exists, False if there is an error
         """
+        # loop through all the entitites and add them to a list of 'upsert' operations
+        operations = []
+        for entity in entities:
+            operations.append(("upsert", entity))
+
         try:
-            return self.table.create_entity(entity=entity)
+            # execute the batch of operations
+            return self.table.submit_transaction(operations)
         except ResourceExistsError:
             self.log.warning(f"Skipping RowKey: {entity['RowKey']} - already exists")
             return None
