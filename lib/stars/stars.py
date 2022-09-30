@@ -235,7 +235,9 @@ class StarEvents:
         """
         Helper function to use the values in self.events to write to the database
         Loops through all events and commits them to the database
+        :return: Boolean - True if successful, False if there is an error
         """
+        success = True
         skipped_events = 0
 
         fmt_events = []
@@ -275,7 +277,9 @@ class StarEvents:
         chunks = [fmt_events[x : x + 100] for x in range(0, len(fmt_events), 100)]
         total_chunks = len(chunks)
 
-        self.log.info(f"Attempting to write {total_chunks} chunks containing {len(fmt_events)} events to the database")
+        self.log.info(
+            f"Attempting to write {total_chunks} chunks containing {len(fmt_events)} events to the database"
+        )
 
         counter = 1
         for chunk in chunks:
@@ -297,6 +301,7 @@ class StarEvents:
                     self.log.error(
                         f"Chunk {counter}/{total_chunks} failed to write on retry - skipping..."
                     )
+                    success = False
 
             counter += 1
 
@@ -308,6 +313,9 @@ class StarEvents:
         self.log.info(
             f"Committed {len(self.events) - skipped_events} changes to the database"
         )
+
+        # return the success status of the entire batch operation
+        return success
 
     def get_stars_in_timeslice(self, limit=20, hours=None, enrich=True, dedupe=False):
         """
@@ -431,6 +439,7 @@ class StarEvents:
         """
         Run the StarEvents class
         This method will collect and store the GitHub star events in the database
+        :return: True if successful, False if not
         """
         self.get_star_events()
-        self.write_star_events()
+        return self.write_star_events()
