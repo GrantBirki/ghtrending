@@ -8,6 +8,8 @@ import time
 from datetime import datetime, timedelta
 
 import requests
+from azure.core.credentials import AzureNamedKeyCredential
+from azure.data.tables import TableServiceClient
 
 
 class StarEvents:
@@ -21,9 +23,11 @@ class StarEvents:
         """
         self.gh_token = os.environ.get("GH_TOKEN", None)
         self.table_name = os.environ.get("TABLE_NAME", "stars")
-        self.db_headers = {}
+        self.storage_account_name = os.environ.get("STORAGE_ACCOUNT_NAME", "ghtrending")
+        self.azure_access_key = os.environ.get("AZURE_ACCESS_KEY", None)
         self.prod = os.environ.get("ENV", False) == "production"
         self.log = self.log_config()
+        self.table = None
         self.db_config()
         self.base_url = "https://data.gharchive.org"
         self.gh_base_url = "https://api.github.com"
@@ -69,31 +73,18 @@ class StarEvents:
     def db_config(self):
         """
         Database connections and configuration
-        :return: connection and cursor objects
+        Currently using Azure Table Storage
         """
-        if self.prod == True:
-            self.log.info("Connecting to production database (env set to production)")
-        else:
-            self.log.info("Connecting to development database (env set to development)")
-
-            # suppress requests SSL warnings to localhost
-            from urllib3.exceptions import InsecureRequestWarning
-
-            requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
-
-        self.db_host = os.environ.get("DB_HOST", "localhost")
-        username = os.environ.get(
-            "BASIC_AUTH_USERNAME", "dev"
-        )  # same as BASIC_AUTH_USER
-        password = os.environ.get(
-            "BASIC_AUTH_PASSWORD", "dev"
-        )  # same as BASIC_AUTH_PASS
-        auth = base64.b64encode(f"{username}:{password}".encode("utf-8")).decode(
-            "utf-8"
+        credential = AzureNamedKeyCredential(
+            self.storage_account_name, self.azure_access_key
         )
-        self.db_headers = {
-            "Authorization": f"Basic {auth}",
-        }
+        table_service_client = TableServiceClient(
+            endpoint=f"https://{self.storage_account_name}.table.core.windows.net/{self.table_name}",
+            credential=credential,
+        )
+
+        # set the table class variable to the Azure table client
+        self.table = table_service_client.get_table_client(table_name=self.table_name)
 
     def clear_events(self):
         """
