@@ -1,4 +1,3 @@
-import base64
 import gzip
 import json
 import logging
@@ -8,6 +7,8 @@ import time
 from datetime import datetime, timedelta
 
 import requests
+from azure.data.tables import TableServiceClient
+from azure.core.exceptions import ResourceExistsError
 
 
 class StarEvents:
@@ -21,9 +22,11 @@ class StarEvents:
         """
         self.gh_token = os.environ.get("GH_TOKEN", None)
         self.table_name = os.environ.get("TABLE_NAME", "stars")
-        self.db_headers = {}
+        self.storage_account_name = os.environ.get("STORAGE_ACCOUNT_NAME", "ghtrending")
+        self.azure_access_key = os.environ.get("AZURE_ACCESS_KEY", None)
         self.prod = os.environ.get("ENV", False) == "production"
         self.log = self.log_config()
+        self.table = None
         self.db_config()
         self.base_url = "https://data.gharchive.org"
         self.gh_base_url = "https://api.github.com"
@@ -69,31 +72,47 @@ class StarEvents:
     def db_config(self):
         """
         Database connections and configuration
-        :return: connection and cursor objects
+        Currently using Azure Table Storage
         """
-        if self.prod == True:
-            self.log.info("Connecting to production database (env set to production)")
-        else:
-            self.log.info("Connecting to development database (env set to development)")
-
-            # suppress requests SSL warnings to localhost
-            from urllib3.exceptions import InsecureRequestWarning
-
-            requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
-
-        self.db_host = os.environ.get("DB_HOST", "localhost")
-        username = os.environ.get(
-            "BASIC_AUTH_USERNAME", "dev"
-        )  # same as BASIC_AUTH_USER
-        password = os.environ.get(
-            "BASIC_AUTH_PASSWORD", "dev"
-        )  # same as BASIC_AUTH_PASS
-        auth = base64.b64encode(f"{username}:{password}".encode("utf-8")).decode(
-            "utf-8"
+        connection_string = f"DefaultEndpointsProtocol=https;AccountName={self.storage_account_name};AccountKey={self.azure_access_key};EndpointSuffix=core.windows.net"
+        table_service_client = TableServiceClient.from_connection_string(
+            conn_str=connection_string
         )
-        self.db_headers = {
-            "Authorization": f"Basic {auth}",
-        }
+        self.log.debug(f"Created table service client for {self.storage_account_name}")
+
+        # set the table class variable to the Azure table client
+        self.table = table_service_client.get_table_client(table_name=self.table_name)
+
+        self.log.info(f"Created client to connect to storage table: {self.table_name}")
+
+    def write(self, entities):
+        """
+        Write a batch of entities to the Azure Table Storage
+        :param entities: entities to write to the Azure Table Storage (list)
+        :return: created entity object if successful, None if the entity already exists, False if there is an error
+        """
+        # loop through all the entitites and add them to a list of 'upsert' operations
+        operations = []
+        for entity in entities:
+            operations.append(("upsert", entity))
+
+        try:
+            # execute the batch of operations
+            return self.table.submit_transaction(operations)
+        except ResourceExistsError:
+            self.log.warning(f"Skipping RowKey: {entity['RowKey']} - already exists")
+            return None
+        except Exception as e:
+            self.log.error(f"Error writing entity to Azure Table Storage: {e}")
+            return False
+
+    def read(self, query):
+        """
+        Execute a query against the Azure Table Storage
+        :param query: query to execute
+        :return: results from the query
+        """
+        return self.table.query_entities(query)
 
     def clear_events(self):
         """
@@ -196,30 +215,6 @@ class StarEvents:
 
         self.events = events
 
-    def db_query(self, query):
-        """
-        Helper method for querying the timeseries database (reads, writes, deletes, etc)
-        :param query: query to execute
-        :return: query results
-        """
-
-        resp = requests.get(
-            f"https://{self.db_host}/exec?query={query}",
-            headers=self.db_headers,
-            verify=self.prod,  # don't use SSL verification if in development
-        )
-
-        if resp.status_code != 200:
-            if resp.status_code == 502:
-                self.log.warning(
-                    f"The query string may be too long on your request! Try reducing the length of your query string"
-                )
-            raise Exception(
-                f"database HTTP error: {resp.text} | status code: {resp.status_code}"
-            )
-
-        return resp
-
     def sanitize(self, field_name):
         """
         Helper function to sanitize the repo_name since the DB can be sensitive to special characters
@@ -240,80 +235,87 @@ class StarEvents:
         """
         Helper function to use the values in self.events to write to the database
         Loops through all events and commits them to the database
+        :return: Boolean - True if successful, False if there is an error
         """
+        success = True
         skipped_events = 0
-        failed_events = 0
 
         fmt_events = []
         for event in self.events:
 
+            # sanitize the repo_name
             repo_name = self.sanitize(event["repo_name"])
             if not repo_name:
                 skipped_events += 1
                 continue
 
+            # sanitize the id (star event_id)
             event_id = self.sanitize(event["id"])
             if not event_id:
                 skipped_events += 1
                 continue
 
+            # append the formatted event to the list
             fmt_events.append(
-                (
-                    event_id,
+                {
+                    "PartitionKey": "stars",
+                    "RowKey": event_id,
+                    "repo_name": repo_name,
+                    "created_at": event["created_at"],
                     # event["actor_id"],
                     # event["actor_login"],
                     # event["repo_id"],
-                    repo_name,
-                    event["created_at"],
-                )
+                }
             )
 
+        # if there are no new events, exit
         if len(fmt_events) == 0:
             self.log.info("No new events to write to the database")
             return
 
-        base_query = f"INSERT INTO {self.table_name} VALUES "
-
-        # split fmt_events into chunks of 750
-        chunks = [fmt_events[x : x + 750] for x in range(0, len(fmt_events), 750)]
-
-        # loops throuh each chunk and send HTTP requests to write to the database
+        # split the fmt_events list into chunks of 100 (max batch size)
+        chunks = [fmt_events[x : x + 100] for x in range(0, len(fmt_events), 100)]
         total_chunks = len(chunks)
+
+        self.log.info(
+            f"Attempting to write {total_chunks} chunks containing {len(fmt_events)} events to the database"
+        )
+
         counter = 1
         for chunk in chunks:
+            start = time.time()
+            result = self.write(chunk)
+            end = time.time()
 
-            try:
-                query = base_query + ",".join(
-                    [f"('{event[0]}','{event[1]}','{event[2]}')" for event in chunk]
+            if result:
+                self.log.info(
+                    f"Chunk {counter}/{total_chunks} written successfully in {round(end - start, 2)} seconds"
                 )
-                self.db_query(query)
-
-                # sleep to avoid overloading the database
-                if self.prod:
-                    time.sleep(10)
-                else:
-                    time.sleep(3)
-
-                self.log.info(f"wrote {counter}/{total_chunks} chunks to the database")
-            except Exception as e:
-                self.log.error(f"Error writing to database (chunk: {counter}): {e}")
-                failed_events += len(chunk)
-                continue
+            elif result is False:
+                # if the chunk failed to write, do additional logging/processing
+                self.log.warning(
+                    f"Chunk {counter}/{total_chunks} failed to write - retrying..."
+                )
+                result = self.write(chunk)
+                if result is False:
+                    self.log.error(
+                        f"Chunk {counter}/{total_chunks} failed to write on retry - skipping..."
+                    )
+                    success = False
 
             counter += 1
 
-        if skipped_events:
-            self.log.info(
-                f"Skipped {skipped_events} events (due to empty 'repo_name' or 'id' value from gharchive)"
-            )
-
-        if failed_events:
-            self.log.info(f"Failed to commit {failed_events} events")
+        # log the number of events skipped
+        if skipped_events > 0:
+            self.log.info(f"Skipped {skipped_events} events")
 
         # get the number of changes
         self.log.info(
-            f"Committed {len(self.events) - skipped_events - failed_events} changes to the database"
+            f"Committed {len(self.events) - skipped_events} changes to the database"
         )
+
+        # return the success status of the entire batch operation
+        return success
 
     def get_stars_in_timeslice(self, limit=20, hours=None, enrich=True, dedupe=False):
         """
@@ -437,6 +439,7 @@ class StarEvents:
         """
         Run the StarEvents class
         This method will collect and store the GitHub star events in the database
+        :return: True if successful, False if not
         """
         self.get_star_events()
-        self.write_star_events()
+        return self.write_star_events()

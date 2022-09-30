@@ -1,5 +1,4 @@
 # Note: to install mysqlclient on linux follow the instructions here: https://github.com/PyMySQL/mysqlclient#linux
-mysqlclient==2.1.1
-
 boto3==1.24.66
 requests==2.28.1
+azure-data-tables==12.4.0

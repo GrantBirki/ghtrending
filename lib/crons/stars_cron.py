@@ -10,4 +10,9 @@ if __name__ == "__main__":
     # Collect the gharchive star events from 2 hours ago
     # NOTE: We get the events from 2 hours ago because the gharchive data for the last hour can be incomplete
     star_events = StarEvents()
-    star_events.run()
+    result = star_events.run()
+    if result:
+        print("✅ Completed successfully")
+    else:
+        print("❌ Failed")
+        sys.exit(1)
