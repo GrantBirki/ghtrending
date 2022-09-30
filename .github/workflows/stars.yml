@@ -23,6 +23,4 @@ jobs:
         run: python lib/crons/stars_cron.py
         env:
           ENV: production
-          DB_HOST: ${{ secrets.DB_HOST }}
-          BASIC_AUTH_USERNAME: ${{ secrets.BASIC_AUTH_USER }}
-          BASIC_AUTH_PASSWORD: ${{ secrets.BASIC_AUTH_PASS }}
+          AZURE_ACCESS_KEY: ${{ secrets.AZURE_ACCESS_KEY }}
