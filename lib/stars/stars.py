@@ -261,7 +261,7 @@ class StarEvents:
                     "PartitionKey": "stars",
                     "RowKey": event_id,
                     "repo_name": repo_name,
-                    "created_at": event["created_at"],
+                    "created_at": datetime.strptime(event["created_at"], "%Y-%m-%dT%H:%M:%SZ"),
                     # event["actor_id"],
                     # event["actor_login"],
                     # event["repo_id"],
