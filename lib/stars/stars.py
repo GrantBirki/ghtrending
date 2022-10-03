@@ -182,9 +182,13 @@ class StarEvents:
             self.log.critical(f"Error downloading {url} - HTTP: {resp.status_code}")
             sys.exit(1)
 
+        # create the tmp/ directory if it doesn't exist
+        if not os.path.exists("tmp"):
+            os.makedirs("tmp")
+
         # save the raw data from the http request to a file
-        path = f"data/{gharchive_timestamp}.json.gz"
-        with open(f"data/{gharchive_timestamp}.json.gz", "wb") as f:
+        path = f"tmp/{gharchive_timestamp}.json.gz"
+        with open(f"tmp/{gharchive_timestamp}.json.gz", "wb") as f:
             f.write(resp.content)
 
         return path
