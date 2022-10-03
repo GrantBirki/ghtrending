@@ -8,6 +8,8 @@ Find the latest trending repositories on GitHub!
 
 [ghtrending.io link](https://ghtrending.io) 🔗
 
+![ghtrending](docs/assets/ghtrending.png)
+
 > Please note, this project is not affiliated with GitHub, Inc.
 
 ## About 💡
