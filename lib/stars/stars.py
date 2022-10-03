@@ -106,15 +106,21 @@ class StarEvents:
             self.log.error(f"Error writing entity to Azure Table Storage: {e}")
             return False
 
-    def read(self, query):
+    def read(self, query , listify=True):
         """
         Execute a query against the Azure Table Storage
         :param query: query to execute
-        :return: results from the query
+        :param listify: return a list of entities (True) or a generator (False)
+        :return: results from the query (list or generator)
         """
         start = time.time()
         try:
             results = self.table.query_entities(query)
+
+            if listify:
+                # convert the generator object to a list
+                results = list(results)
+
             end = time.time()
             self.log.info(f"Read query executed in {round(end - start, 2)} seconds")
             return results
