@@ -112,7 +112,16 @@ class StarEvents:
         :param query: query to execute
         :return: results from the query
         """
-        return self.table.query_entities(query)
+        start = time.time()
+        try:
+            results = self.table.query_entities(query)
+            end = time.time()
+            self.log.info(f"Read query executed in {round(end - start, 2)} seconds")
+            return results
+        except Exception as e:
+            end = time.time()
+            self.log.error(f"Read query failed in {round(end - start, 2)} seconds")
+            self.log.error(f"Error executing read query: {e}")
 
     def clear_events(self):
         """
