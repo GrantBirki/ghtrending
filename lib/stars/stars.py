@@ -7,8 +7,8 @@ import time
 from datetime import datetime, timedelta
 
 import requests
-from azure.data.tables import TableServiceClient
 from azure.core.exceptions import ResourceExistsError
+from azure.data.tables import TableServiceClient
 
 
 class StarEvents:
@@ -406,9 +406,7 @@ class StarEvents:
 
         # loop through all the most stared repos and get the additional information
         for repo in self.most_stared:
-            resp = requests.get(
-                f"{self.gh_base_url}/repos/{repo[0]}", headers=headers
-            )
+            resp = requests.get(f"{self.gh_base_url}/repos/{repo[0]}", headers=headers)
 
             if resp.status_code != 200:
                 self.log.error(
