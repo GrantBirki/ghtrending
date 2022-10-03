@@ -13,6 +13,7 @@ from stars import StarEvents
 GH_TOKEN = os.environ.get("GH_TOKEN", None)
 AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID", None)
 AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY", None)
+AZURE_ACCESS_KEY = os.environ.get("AZURE_ACCESS_KEY", None)
 BUCKET_NAME = os.environ.get("BUCKET_NAME", "data.ghtrending.io")
 AWS_REGION = os.environ.get("AWS_REGION", "us-east-1")
 STAR_TRENDS_PATH = os.environ.get("STAR_TRENDS_PATH", "trends/stars")
@@ -46,6 +47,10 @@ def main():
 
     if GH_TOKEN is None:
         print("GH_TOKEN not set. Exiting.")
+        sys.exit(1)
+
+    if AZURE_ACCESS_KEY is None:
+        print("AZURE_ACCESS_KEY not set. Exiting.")
         sys.exit(1)
 
     # Get Star Event Trends

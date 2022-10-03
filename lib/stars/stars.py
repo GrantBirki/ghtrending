@@ -7,8 +7,8 @@ import time
 from datetime import datetime, timedelta
 
 import requests
-from azure.data.tables import TableServiceClient
 from azure.core.exceptions import ResourceExistsError
+from azure.data.tables import TableServiceClient
 
 
 class StarEvents:
@@ -106,13 +106,28 @@ class StarEvents:
             self.log.error(f"Error writing entity to Azure Table Storage: {e}")
             return False
 
-    def read(self, query):
+    def read(self, query, listify=True):
         """
         Execute a query against the Azure Table Storage
         :param query: query to execute
-        :return: results from the query
+        :param listify: return a list of entities (True) or a generator (False)
+        :return: results from the query (list or generator)
         """
-        return self.table.query_entities(query)
+        start = time.time()
+        try:
+            results = self.table.query_entities(query)
+
+            if listify:
+                # convert the generator object to a list
+                results = list(results)
+
+            end = time.time()
+            self.log.info(f"Read query executed in {round(end - start, 2)} seconds")
+            return results
+        except Exception as e:
+            end = time.time()
+            self.log.error(f"Read query failed in {round(end - start, 2)} seconds")
+            self.log.error(f"Error executing read query: {e}")
 
     def clear_events(self):
         """
@@ -167,9 +182,13 @@ class StarEvents:
             self.log.critical(f"Error downloading {url} - HTTP: {resp.status_code}")
             sys.exit(1)
 
+        # create the tmp/ directory if it doesn't exist
+        if not os.path.exists("tmp"):
+            os.makedirs("tmp")
+
         # save the raw data from the http request to a file
-        path = f"data/{gharchive_timestamp}.json.gz"
-        with open(f"data/{gharchive_timestamp}.json.gz", "wb") as f:
+        path = f"tmp/{gharchive_timestamp}.json.gz"
+        with open(f"tmp/{gharchive_timestamp}.json.gz", "wb") as f:
             f.write(resp.content)
 
         return path
@@ -319,53 +338,53 @@ class StarEvents:
         # return the success status of the entire batch operation
         return success
 
-    def get_stars_in_timeslice(self, limit=20, hours=None, enrich=True, dedupe=False):
+    def get_stars_in_timeslice(self, hours=None, enrich=True, limit=20):
         """
         Query the database for the most stared repositories in a given time period
-        :param limit: number of results to return
         :param hours: a time period to limit the results to
         :param enrich: enrich the results with the GitHub API
-        :param dedupe: remove duplicate results
+        :param limit: number of top repos to return (default: 20)
         :return: list of most stared repositories
         """
         start = time.time()
-        # Query the database to find the repos with stars during the given time period
-        query = f"SELECT id, repo_name FROM 'stars' WHERE created_at > dateadd('h', -{hours}, now()) GROUP BY repo_name ORDER BY repo_name"
 
-        resp = self.db_query(query)
-        data = resp.json()["dataset"]
+        # the upper bound is now
+        upper_bound = datetime.utcnow().isoformat(timespec="seconds") + "Z"
+        # the lower bound is now - the number of hours
+        lower_bound = (datetime.utcnow() - timedelta(hours=hours)).isoformat(
+            timespec="seconds"
+        ) + "Z"
 
-        with open("data.json", "w") as f:
-            f.write(json.dumps(data))
+        # query the Azure Table Storage for the events within the time period
+        query = f"created_at gt datetime'{lower_bound}' and created_at lt datetime'{upper_bound}'"
+        data = self.read(query)
 
-        # dedupe the results by looking for duplicate "id" values where id is a string
-        if dedupe:
-            seen = set()
-            # iterate over all the events and select index [0] (the id) and add it to the set
-            data = [x for x in data if not (x[0] in seen or seen.add(x[0]))]
-            self.log.info(f"Removed {len(data) - len(seen)} duplicate results")
+        self.log.info(f"Processing {len(data)} events")
 
-        self.log.info(f"Found {len(data)} results to process")
-
-        # loop through every result and count the total number of occurances for each repo (index 1 - string)
-        # this is done by creating a dictionary where the key is the repo name and the value is the number of occurances
+        # loop through every result and count the total number of occurances for each repo_name
+        # this is done by creating a dictionary where the key is the repo_name and the value is the number of occurances
         # the dictionary is then sorted by the number of occurances and returned
         results = {}
-        for result in data:
-            if result[1] in results:
-                results[result[1]] += 1
+        for entry in data:
+            if entry["repo_name"] in results:
+                results[entry["repo_name"]] += 1
             else:
-                results[result[1]] = 1
-        results = sorted(results.items(), key=lambda x: x[1], reverse=True)
-        results = results[:limit]
+                results[entry["repo_name"]] = 1
+
+        # sort the results by the number of occurances
+        results = dict(sorted(results.items(), key=lambda item: item[1], reverse=True))
+
+        # create a list of the top N repos using the limit parameter
+        top_stared_repos = list(results.items())[:limit]
 
         # update the object with the results
-        self.most_stared = results
+        self.most_stared = top_stared_repos
 
         self.log.info(
             f"Processed {len(data)} results in {round(time.time() - start, 3)} seconds"
         )
 
+        # if enrich is True, use the GitHub API to enrich the results
         if enrich:
             self.most_stared = self.enrich_most_stared()
 
@@ -382,11 +401,11 @@ class StarEvents:
         start = time.time()
         most_stared_enriched = []
 
+        # add github token to request for higher rate limit
+        headers = {"Authorization": f"Bearer {self.gh_token}"}
+
         # loop through all the most stared repos and get the additional information
         for repo in self.most_stared:
-
-            # add github token to request for higher rate limit
-            headers = {"Authorization": f"Bearer {self.gh_token}"}
             resp = requests.get(f"{self.gh_base_url}/repos/{repo[0]}", headers=headers)
 
             if resp.status_code != 200:
