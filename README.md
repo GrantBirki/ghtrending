@@ -27,7 +27,7 @@ This project has two main components:
 
 All data which is used to generate the trending data is from [gharchive](http://www.gharchive.org/) which is an open source project to collect a history of all GitHub events.
 
-A GitHub Action cron runs once an hour to collect all data from the previous hour from gharchive and stores that data in a SQL database (PlanetScale free-tier).
+A GitHub Action cron runs once an hour to collect all data from the previous hour from gharchive and stores that data in an Azure Storage Table. The cron stores the timestamp of when the "star event" took place, the name of the repo, and the name of the user who starred the repo.
 
 From here, the second phase of the Action workflow kicks off which aggregates all the events from the database in time slices (1 day, 1 week, and 1 month). This data is then enriched with repository and contributor information from GitHub's API.
 
@@ -44,6 +44,24 @@ In short, this website is a React app that uses Primer components and the data f
 ## Contributing 🤝
 
 All and any contributions are welcome! If you have an idea, open an issue. If you want to contribute code, open a PR!
+
+### Development Setup 🔨
+
+To get started, all you will need is `node` and `npm` installed to start the React app locally:
+
+```bash
+npm i
+npm run prebuild
+npm run start
+```
+
+A local instance of the website will be running at [`localhost:3000`](http://localhost:3000)
+
+---
+
+It should be noted that I have not included instructions on how to contribute to the "data/backend" portion of this project. That is because it is mostly a "set-and-forget" situation. The GitHub Action cron(s) will always run in the background and Azure Table Storage will just *exist*. There really shouldn't ever be a reason to modify the data pipeline ™️
+
+However, if you are interested in contributing to the data pipeline, please open an issue and I will be happy to help you get started!
 
 ## Open Source ❤️
 
