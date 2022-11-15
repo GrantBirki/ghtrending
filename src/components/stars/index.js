@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, Text, Box, Avatar, SubNav, AvatarStack, Token } from "@primer/react";
+import { Link, Text, Box, Avatar, SubNav, AvatarStack, Token, Spinner } from "@primer/react";
 import { RepoIcon, StarIcon, RepoForkedIcon, IssueOpenedIcon } from "@primer/octicons-react";
 import fetchStars from "../../services/fetchStars";
 import { ActionMenu, ActionList } from "@primer/react";
@@ -47,7 +47,13 @@ function Stars() {
   }, [selectedType.value]);
 
   if (!stars) {
-    return <div key={"loading-stars"}>Loading...</div>;
+    return (
+      <Box className="center">
+        <Box bg="canvas.subtle" sx={{ paddingTop: "2rem" }}>
+          <Spinner size="large" />
+        </Box>
+      </Box>
+    );
   }
 
   return (
