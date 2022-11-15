@@ -30,8 +30,12 @@ function MainHeader() {
   const handleSwitchChange = (on) => {
     if (on) {
       setColorMode("light");
+      // set body background color to white
+      document.body.style.backgroundColor = "#fff";
     } else {
       setColorMode("dark");
+      // set body background color to dark
+      document.body.style.backgroundColor = "#24292f";
     }
   };
 
