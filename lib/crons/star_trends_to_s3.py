@@ -73,14 +73,14 @@ def main():
         }
     )
 
-    # Get the most stared repos from the past 30 days
-    print("\nGetting most stared repos from the past 30 days")
-    results.append(
-        {
-            "name": "last_30_days",
-            "data": star_events.get_stars_in_timeslice(hours=24 * 30),
-        }
-    )
+    # # Get the most stared repos from the past 30 days
+    # print("\nGetting most stared repos from the past 30 days")
+    # results.append(
+    #     {
+    #         "name": "last_30_days",
+    #         "data": star_events.get_stars_in_timeslice(hours=24 * 30),
+    #     }
+    # )
 
     # Upload to S3
     print("\nUploading to S3...")

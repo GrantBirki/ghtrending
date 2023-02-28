@@ -20,12 +20,12 @@ const fieldTypes = [
     value: "last_7_days",
     shortText: "this week",
   },
-  {
-    icon: CalendarIcon,
-    name: "Last 30 days",
-    value: "last_30_days",
-    shortText: "this month",
-  },
+  // {
+  //   icon: CalendarIcon,
+  //   name: "Last 30 days",
+  //   value: "last_30_days",
+  //   shortText: "this month",
+  // },
 ];
 
 function Stars() {
