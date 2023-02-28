@@ -408,6 +408,10 @@ class StarEvents:
         for repo in self.most_stared:
             resp = requests.get(f"{self.gh_base_url}/repos/{repo[0]}", headers=headers)
 
+            if resp.status_code == 404:
+                self.log.warning(f"Repo {repo[0]} not found - skipping...")
+                continue
+
             if resp.status_code != 200:
                 self.log.error(
                     f"Error getting repo enrichment data for {repo[0]} - HTTP: {resp.status_code}"
