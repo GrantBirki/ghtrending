@@ -19,14 +19,16 @@ jobs:
 
     steps:
 
-      - uses: github/branch-deploy@v4.4.0
+      - uses: github/branch-deploy@v5.1.0
         id: branch-deploy
         with:
           admins: "GrantBirki"
+          environment_targets: "production"
+          environment_urls: "production|https://ghtrending.io"
 
       - name: checkout
         if: ${{ steps.branch-deploy.outputs.continue == 'true' }}
-        uses: actions/checkout@7884fcad6b5d53d10323aee724dc68d8b9096a2e # pin@v2
+        uses: actions/checkout@v3.3.0
         with:
           ref: ${{ steps.branch-deploy.outputs.ref }}
 
