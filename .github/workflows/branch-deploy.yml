@@ -24,7 +24,7 @@ jobs:
         with:
           admins: "GrantBirki"
           environment_targets: "production"
-          environment_urls: "production|https://ghtrending.io"
+          environment_urls: "production|https://ghtrending.birki.io"
 
       - name: checkout
         if: ${{ steps.branch-deploy.outputs.continue == 'true' }}
