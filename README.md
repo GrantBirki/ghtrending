@@ -6,7 +6,7 @@ Open source version of GitHub's trending page
 
 Find the latest trending repositories on GitHub!
 
-[ghtrending.io link](https://ghtrending.io) 🔗
+[ghtrending.birki.io link](https://ghtrending.birki.io) 🔗
 
 ![ghtrending](docs/assets/ghtrending.png)
 
