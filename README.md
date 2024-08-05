@@ -2,6 +2,16 @@
 
 [![ci](https://github.com/GrantBirki/ghtrending/actions/workflows/ci.yml/badge.svg)](https://github.com/GrantBirki/ghtrending/actions/workflows/ci.yml) [![stars](https://github.com/GrantBirki/ghtrending/actions/workflows/stars.yml/badge.svg)](https://github.com/GrantBirki/ghtrending/actions/workflows/stars.yml) [![stars_to_s3](https://github.com/GrantBirki/ghtrending/actions/workflows/stars_to_s3.yml/badge.svg)](https://github.com/GrantBirki/ghtrending/actions/workflows/stars_to_s3.yml)
 
+---
+
+⚠️ This project is being archived. It  appears that GitHub is keeping the trending page and that is great! I'm no longer going to maintain this project for the following reasons:
+
+1. I don't want to keep paying $40 a year for the domain
+2. I cannot move it under an existing domain easily (like one I already own) because Cloudflare charges $10 a month for subsub domain certificates
+3. I simply don't have enough time.
+
+---
+
 Open source version of GitHub's trending page
 
 Find the latest trending repositories on GitHub!
